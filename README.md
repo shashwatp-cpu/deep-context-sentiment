@@ -10,6 +10,11 @@ A production-ready sentiment analysis system that processes social media comment
 - Detailed analysis logging and justification for each comment
 - 6 distinct sentiment categories with context-aware classification
 - Batch processing for efficient analysis of large comment volumes
+- **Modern "Dark Mode" Dashboard**:
+  - Glassmorphism design with neon accents
+  - Interactive visualization including sentiment distribution charts
+  - Smooth animations and transitions
+  - Responsive layout for valid analysis results
 - Comprehensive API with detailed documentation
 - Docker containerization for easy deployment
 - Structured logging and monitoring
