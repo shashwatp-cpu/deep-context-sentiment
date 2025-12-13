@@ -77,3 +77,25 @@ class AnalysisResponse(BaseModel):
     allComments: Dict[str, List[str]]
     processingTime: float
     batchesProcessed: int
+
+class UserBase(BaseModel):
+    email: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserLogin(UserBase):
+    password: str
+
+class UserResponse(UserBase):
+    id: int
+    is_active: bool
+    plan_type: str
+    
+    class Config:
+        from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+

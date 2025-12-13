@@ -40,6 +40,14 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(router, prefix="/api/v1")
+from app.api import auth, payment
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(payment.router, prefix="/api/v1/payment", tags=["payment"])
+
+# Create database tables
+from app.core.database import engine
+from app.models import base
+base.Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 async def root():

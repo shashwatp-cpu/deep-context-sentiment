@@ -1,151 +1,94 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
-import Hero from './components/Hero';
-import GlassCard from './components/GlassCard';
-import StatsGrid from './components/StatsGrid';
-import SentimentChart from './components/SentimentChart';
-import SentimentBadge from './components/SentimentBadge';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Landing from './pages/Landing';
+import SearchPage from './pages/SearchPage';
+import Dashboard from './pages/Dashboard';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import PricingPage from './pages/PricingPage';
 
-const API_Base = "http://localhost:8000/api/v1";
+// Navigation Wrapper to show Navbar
+const NavigationWrapper = ({ children }) => {
+  const { user, logout } = useAuth();
+  const location = useLocation();
 
-function App() {
-  const [status, setStatus] = useState('IDLE'); // IDLE, LOADING, SUCCESS, ERROR
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-
-  const analyzeUrl = async (url) => {
-    setStatus('LOADING');
-    setError(null);
-    try {
-      // Direct call to analyze endpoint
-      const res = await axios.post(`${API_Base}/analyze`, { url });
-      setData(res.data);
-      setStatus('SUCCESS');
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.detail || "Failed to analyze URL. Please check the link and try again.");
-      setStatus('ERROR');
-    }
-  };
-
-  const reset = () => {
-    setStatus('IDLE');
-    setData(null);
-    setError(null);
-  };
+  if (location.pathname === '/') return children;
 
   return (
-    <div className="min-h-screen font-sans selection:bg-fuchsia-500/30">
-      <AnimatePresence mode="wait">
-        {status !== 'SUCCESS' ? (
-          <motion.div
-            key="hero"
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute inset-0"
-          >
-            <Hero onAnalyze={analyzeUrl} isLoading={status === 'LOADING'} />
-            {error && (
-              <div className="absolute bottom-12 left-0 right-0 p-4 flex justify-center animate-fade-in">
-                <div className="bg-red-500/10 border border-red-500/20 text-red-200 px-6 py-3 rounded-xl backdrop-blur-md">
-                  {error}
-                </div>
-              </div>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="min-h-screen p-6 md:p-8 max-w-7xl mx-auto space-y-6"
-          >
-            {/* Header */}
-            <header className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={reset}
-                  className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white"
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
-                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                  Analysis Results
-                </h1>
-              </div>
-              <a
-                href={data?.postUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-2 text-sm text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
-              >
-                <span>View Original Post</span>
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </header>
-
-            {/* Context Card */}
-            <GlassCard className="mb-8">
-              <div className="flex flex-col md:flex-row gap-6">
-                {data?.postContext?.images?.[0] && (
-                  <img
-                    src={data.postContext.images[0]}
-                    alt="Post content"
-                    className="w-full md:w-48 h-32 object-cover rounded-lg"
-                  />
-                )}
-                <div className="space-y-2 flex-1">
-                  <div className="flex items-center space-x-3">
-                    <span className="capitalize px-2 py-0.5 rounded text-xs - font-medium bg-slate-800 text-slate-300 border border-slate-700">
-                      {data?.platform}
-                    </span>
-                    <span className="text-slate-500 text-xs text-mono">
-                      {new Date(data?.timestamp).toLocaleString()}
-                    </span>
-                  </div>
-                  <h2 className="text-xl font-semibold text-slate-100 line-clamp-2">
-                    {data?.postContext?.title || data?.postContext?.description || "No Title Detected"}
-                  </h2>
-                  <p className="text-slate-400 text-sm line-clamp-2">
-                    {data?.postContext?.text || "No description text available."}
-                  </p>
-                </div>
-              </div>
-            </GlassCard>
-
-            {/* Stats & Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <StatsGrid analysis={data} />
-
-                <GlassCard className="min-h-[400px]">
-                  <h3 className="text-xl font-semibold mb-6 text-slate-100">Top Comments</h3>
-                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                    {Object.entries(data?.topComments || {}).map(([category, comments]) => (
-                      <div key={category} className="space-y-3">
-                        {comments.map((comment, idx) => (
-                          <div key={`${category}-${idx}`} className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/30 hover:bg-slate-800/50 transition-colors">
-                            <div className="flex justify-between items-start gap-4 mb-2">
-                              <SentimentBadge sentiment={category.replace(/_/g, '/').replace(/\b\w/g, l => l.toUpperCase())} />
-                            </div>
-                            <p className="text-slate-300 text-sm leading-relaxed">"{comment}"</p>
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </GlassCard>
-              </div>
-
-              <div className="lg:col-span-1">
-                <SentimentChart data={data?.summary} />
-              </div>
+    <div className="min-h-screen bg-slate-900 text-slate-100">
+      <nav className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            <Link to="/" className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-500 to-indigo-500">
+              DeepContext
+            </Link>
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <>
+                  <span className="text-sm text-slate-400 hidden md:block">{user.email} <span className="text-xs border border-slate-700 rounded px-1">{user.plan_type}</span></span>
+                  <Link to="/pricing" className="text-sm text-slate-300 hover:text-white">Pricing</Link>
+                  <button onClick={logout} className="text-sm bg-red-500/10 text-red-400 px-3 py-1.5 rounded-lg hover:bg-red-500/20 transition-colors">
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="text-sm text-slate-300 hover:text-white">Login</Link>
+                  <Link to="/register" className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition-colors">
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      </nav>
+      {children}
     </div>
+  );
+};
+
+// Redirect to /search if logged in, else show Landing
+const RootRoute = () => {
+  // We want the Landing Page to be visible even if logged in? 
+  // Usually marketing pages are visible to everyone. 
+  // But if logged in, the "Get Started" buttons should go to App.
+  // The previous request said: "For the cases the user already has an account on the top right... provide option to login or sign up (or Open App)"
+  return <Landing />;
+};
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return <div>Loading...</div>;
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <NavigationWrapper>
+          <Routes>
+            <Route path="/" element={<RootRoute />} />
+            <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          </Routes>
+        </NavigationWrapper>
+      </AuthProvider>
+    </Router>
   );
 }
 

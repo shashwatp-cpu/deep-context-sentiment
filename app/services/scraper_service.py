@@ -46,6 +46,7 @@ class ScraperService:
         comment_data = await self._make_apify_request(
             "streamers~youtube-comments-scraper",
             {
+                "commentsSortBy": "0",
                 "maxComments": settings.YOUTUBE_MAX_COMMENTS,
                 "startUrls": [{"url": url, "method": "GET"}]
             }

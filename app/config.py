@@ -15,6 +15,18 @@ class Settings(BaseSettings):
     APIFY_API_TOKEN: str
     GOOGLE_GEMINI_API_KEY: str
     OPENAI_API_KEY: Optional[str] = None
+
+    # Razorpay
+    RAZORPAY_KEY_ID: Optional[str] = None
+    RAZORPAY_KEY_SECRET: Optional[str] = None
+
+    # Security
+    SECRET_KEY: str = "your-secret-key-here"  # Change in production
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    # Database
+    DATABASE_URL: Optional[str] = "postgresql://postgres:$Lh7$Svb42sz/ry@db.wlqhswlnzyuklfqtsdib.supabase.co:5432/postgres"
     
     # Model Configuration
     GEMINI_MODEL: str = "gemini-2.5-flash-lite"
