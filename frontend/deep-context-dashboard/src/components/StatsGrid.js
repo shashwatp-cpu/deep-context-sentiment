@@ -4,7 +4,7 @@ import { MessageSquare, Clock, BarChart3 } from 'lucide-react';
 
 const StatsGrid = ({ analysis }) => {
     if (!analysis || !analysis.summary) return null;
-    const { summary, processingTime, allComments } = analysis;
+    const { summary, processingTime } = analysis;
 
     // Calculate dominant sentiment
     const sentiments = Object.entries(summary).filter(([k]) => k !== 'totalComments');

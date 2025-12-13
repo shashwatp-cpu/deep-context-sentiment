@@ -15,11 +15,12 @@ export const AuthProvider = ({ children }) => {
         } else {
             setLoading(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchUser = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/v1/auth/me'); // Update URL as needed for prod
+            const response = await axios.get('/api/v1/auth/me'); // Update URL as needed for prod
             setUser(response.data);
         } catch (error) {
             console.error("Error fetching user", error);
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         formData.append('username', email);
         formData.append('password', password);
 
-        const response = await axios.post('http://localhost:8000/api/v1/auth/token', formData);
+        const response = await axios.post('/api/v1/auth/token', formData);
         const { access_token } = response.data;
 
         localStorage.setItem('token', access_token);
@@ -43,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (email, password) => {
-        await axios.post('http://localhost:8000/api/v1/auth/register', { email, password });
+        await axios.post('/api/v1/auth/register', { email, password });
         await login(email, password); // Auto login after register
     };
 
