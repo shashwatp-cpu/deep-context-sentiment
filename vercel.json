@@ -6,7 +6,7 @@
             "use": "@vercel/python"
         },
         {
-            "src": "frontend/deep-context-dashboard/package.json",
+            "src": "frontend/package.json",
             "use": "@vercel/static-build",
             "config": {
                 "distDir": "build"
@@ -20,7 +20,7 @@
         },
         {
             "source": "/(.*)",
-            "destination": "/frontend/deep-context-dashboard/$1"
+            "destination": "/frontend/$1"
         }
     ]
 }
