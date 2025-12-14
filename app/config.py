@@ -44,6 +44,13 @@ class Settings(BaseSettings):
     TWITTER_MAX_ITEMS: int = 100
     INSTAGRAM_MAX_COMMENTS: int = 100
     
+    # Usage Limits
+    PLAN_LIMITS: dict = {
+        "free": 3,
+        "basic_1": 50,
+        "pro_5": 500
+    }
+    
     # # Optional Integrations
     # REDIS_HOST: str = "localhost"
     # REDIS_PORT: int = 6379

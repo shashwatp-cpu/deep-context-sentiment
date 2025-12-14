@@ -19,9 +19,27 @@ from app.utils.batch_processor import BatchProcessor
 logger = structlog.get_logger()
 router = APIRouter()
 
+from app.models.user import User
+from app.api.auth import get_current_user
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from fastapi import Depends
+
 @router.post("/analyze", response_model=AnalysisResponse)
-async def analyze_url(request: AnalysisRequest) -> AnalysisResponse:
+async def analyze_url(
+    request: AnalysisRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> AnalysisResponse:
     """Analyze sentiment of comments on a social media post."""
+    # Check Usage Limits
+    plan_limit = settings.PLAN_LIMITS.get(current_user.plan_type, 3) # Default to free limit
+    if current_user.request_count >= plan_limit:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Usage limit reached for plan '{current_user.plan_type}'. Please upgrade."
+        )
+
     start_time = time.time()
     
     try:
@@ -87,6 +105,11 @@ async def analyze_url(request: AnalysisRequest) -> AnalysisResponse:
                    total_comments=len(all_sentiments),
                    processing_time=processing_time)
                    
+        # Increment Usage Count
+        current_user.request_count += 1
+        current_user.last_request_date = datetime.utcnow()
+        db.commit()
+
         return response
         
     except ValueError as e:

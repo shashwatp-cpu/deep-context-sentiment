@@ -15,3 +15,7 @@ class User(Base):
     subscription_end_date = Column(DateTime, nullable=True)
     razorpay_customer_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Usage Tracking
+    request_count = Column(Integer, default=0)
+    last_request_date = Column(DateTime, nullable=True)
