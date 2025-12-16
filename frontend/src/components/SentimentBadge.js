@@ -1,19 +1,21 @@
 import React from 'react';
 
 const sentimentColors = {
-    'Supportive/Empathetic': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    'Informative/Neutral': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-    'Critical/Disapproving': 'bg-red-500/20 text-red-300 border-red-500/30',
-    'Sarcastic/Ironic': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-    'Angry/Hostile': 'bg-red-600/20 text-red-400 border-red-600/30',
-    'Appreciative/Praising': 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+    'Supportive/Empathetic': 'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
+    'Informative/Neutral': 'bg-brand-cream text-brand-primary border-brand-primary/10',
+    'Critical/Disapproving': 'bg-brand-red/10 text-brand-red border-brand-red/20',
+    'Sarcastic/Ironic': 'bg-brand-orange/10 text-brand-orange border-brand-orange/20',
+    'Angry/Hostile': 'bg-brand-red/20 text-brand-red border-brand-red/30 font-bold',
+    'Appreciative/Praising': 'bg-brand-accent/20 text-brand-orange border-brand-accent/40',
 };
 
 const SentimentBadge = ({ sentiment, className = '' }) => {
-    const colorClass = sentimentColors[sentiment] || 'bg-slate-500/20 text-slate-300 border-slate-500/30';
+    // Normalizing keys to match data
+    const key = sentimentColors[sentiment] ? sentiment : 'Informative/Neutral';
+    const colorClass = sentimentColors[key];
 
     return (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${colorClass} ${className}`}>
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${colorClass} ${className}`}>
             {sentiment}
         </span>
     );
