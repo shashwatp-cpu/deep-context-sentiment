@@ -1,10 +1,13 @@
 .env
 credentials.json
-__pycahce__/
+__pycache__/
 *.pyc 
 .pytest_cache/
 .coverage
 venv/
 .venv/
-/logs
-/tests
+logs/
+tests/
+node_modules/
+build/
+.DS_Store

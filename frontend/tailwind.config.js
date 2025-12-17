@@ -10,23 +10,23 @@ module.exports = {
       },
       colors: {
         brand: {
-          primary: '#003049', // Primary Dark Blue
-          cream: '#EAE2B7',   // Soft Background Cream
-          accent: '#FCBF49',  // Highlight / CTA Yellow
-          red: '#D62828',     // Critical / Angry Red
-          orange: '#F77F00',  // Sarcasm / Warning Orange
+          primary: '#00A99D', // GiveWell Teal
+          secondary: '#1A202C', // Dark heading text
+          dark: '#2D3748', // Footer dark
+          light: '#F7FAFC', // Section background off-white
+          accent: '#00A99D', // Match primary for now
+          // Keeping sentiment colors for functional parts of the app
+          red: '#D62828',
+          orange: '#F77F00',
         },
         sentiment: {
-          supportive: '#003049', // Mapping to Primary for now (Trust)
+          supportive: '#00A99D',
           critical: '#D62828',
           angry: '#D62828',
           sarcastic: '#F77F00',
-          informative: '#219EBC', // Adding a complementary blue (from similar palette usually) or I can use opacity of Primary. 
-                                  // Wait, I should strictly stick to palette if possible. 
-                                  // But #003049 is very dark. 
-                                  // Let's use #003049 for now.
           appreciative: '#FCBF49',
-          neutral: '#6B7280', // keeping a gray for neutral
+          neutral: '#6B7280',
+          informative: '#219EBC',
         }
       },
       animation: {

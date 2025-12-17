@@ -3,11 +3,12 @@ from app.models.base import Base
 from datetime import datetime
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "users_v2"
 
     id = Column(Integer, primary_key=True, index=True)
+    clerk_id = Column(String, unique=True, index=True, nullable=True) # ID from Clerk
     email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    hashed_password = Column(String, nullable=True) # Optional now
     is_active = Column(Boolean, default=True)
     
     # Subscription fields
