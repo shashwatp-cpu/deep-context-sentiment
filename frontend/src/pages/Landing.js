@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Sparkles, ArrowRight, CheckCircle, AlertTriangle,
@@ -7,21 +7,9 @@ import {
 } from 'lucide-react';
 
 const Landing = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const pricingRef = useRef(null);
 
-  const scrollToPricing = () => {
-    pricingRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handlePlanSelect = (plan) => {
-    if (user) {
-      navigate('/pricing');
-    } else {
-      navigate('/register');
-    }
-  };
+  // Removed pricing refs and handlers as requested
 
   // Mock Data for Demo
   const demoComments = [
@@ -47,12 +35,12 @@ const Landing = () => {
                   <Link to="/login" className="text-sm font-medium text-white/80 hover:text-white transition-colors">
                     Login
                   </Link>
-                  <button
-                    onClick={scrollToPricing}
+                  <Link
+                    to="/register"
                     className="text-sm bg-brand-accent text-brand-primary px-4 py-2.5 rounded-lg font-semibold hover:bg-white hover:scale-105 transition-all shadow-lg shadow-brand-accent/20"
                   >
-                    Start Free
-                  </button>
+                    Get Started
+                  </Link>
                 </>
               )}
               {user && (
@@ -85,12 +73,12 @@ const Landing = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={scrollToPricing}
+            <Link
+              to="/register"
               className="w-full sm:w-auto px-8 py-4 bg-brand-accent text-brand-primary rounded-xl font-bold text-lg hover:bg-white hover:scale-105 transition-all shadow-xl shadow-brand-accent/20 flex items-center justify-center gap-2"
             >
-              Analyze Now <ArrowRight className="w-5 h-5" />
-            </button>
+              Get Started <ArrowRight className="w-5 h-5" />
+            </Link>
             <div className="text-sm text-white/50 bg-white/5 px-4 py-2 rounded-lg backdrop-blur-sm">
               No credit card required
             </div>
@@ -256,40 +244,19 @@ const Landing = () => {
       </section>
 
       {/* Pricing Section */}
-      <section ref={pricingRef} className="py-24 bg-brand-cream relative">
+      <section className="py-24 bg-brand-cream relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-brand-primary">Simple Pricing</h2>
-            <p className="mt-4 text-slate-600">Start for free. Scale when you need to.</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-brand-primary">Pricing</h2>
+            <p className="mt-4 text-slate-600">Enterprise-grade analysis for everyone.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Free Plan */}
-            <div className="bg-white rounded-2xl p-8 border border-slate-200 hover:border-brand-primary/20 transition-all hover:shadow-xl">
-              <h3 className="text-xl font-bold text-brand-primary">Free</h3>
-              <div className="mt-4 flex items-baseline">
-                <span className="text-4xl font-extrabold text-brand-primary">$0</span>
-                <span className="ml-1 text-slate-500">/mo</span>
-              </div>
-              <button
-                onClick={() => handlePlanSelect('free')}
-                className="mt-8 w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-brand-primary rounded-xl font-bold transition-colors"
-              >
-                Start for Free
-              </button>
-              <ul className="mt-8 space-y-4">
-                {["5 Analysis / day", "Basic Categories", "Community Support"].map((feat, i) => (
-                  <li key={i} className="flex items-center text-slate-600 text-sm">
-                    <CheckCircle className="w-4 h-4 text-brand-primary/50 mr-3" /> {feat}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
 
             {/* Scale Plan */}
-            <div className="bg-brand-primary rounded-2xl p-8 border-2 border-brand-accent relative shadow-2xl transform scale-105 z-10">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 bg-brand-accent text-brand-primary px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-lg">
-                Most Popular
+            <div className="bg-brand-primary rounded-2xl p-8 border-2 border-brand-accent relative shadow-2xl opacity-75 grayscale-[0.5]">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 bg-slate-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-lg">
+                Coming Soon
               </div>
               <h3 className="text-xl font-bold text-white">Pro Creator</h3>
               <div className="mt-4 flex items-baseline">
@@ -297,32 +264,32 @@ const Landing = () => {
                 <span className="ml-1 text-white/50">/mo</span>
               </div>
               <button
-                onClick={() => handlePlanSelect('pro')}
-                className="mt-8 w-full py-3 px-4 bg-brand-accent hover:bg-white text-brand-primary rounded-xl font-bold transition-all"
+                disabled
+                className="mt-8 w-full py-3 px-4 bg-slate-600 text-white rounded-xl font-bold cursor-not-allowed"
               >
-                Get Pro Access
+                Coming Soon
               </button>
               <ul className="mt-8 space-y-4">
                 {["50 Analysis / day", "Sarcasm & Irony Detection", "Export to CSV", "Priority Support"].map((feat, i) => (
                   <li key={i} className="flex items-center text-white/90 text-sm">
-                    <CheckCircle className="w-4 h-4 text-brand-accent mr-3" /> {feat}
+                    <CheckCircle className="w-4 h-4 text-white/50 mr-3" /> {feat}
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Enterprise Plan */}
-            <div className="bg-white rounded-2xl p-8 border border-slate-200 hover:border-brand-primary/20 transition-all hover:shadow-xl">
+            <div className="bg-white rounded-2xl p-8 border border-slate-200 opacity-75 grayscale-[0.5]">
               <h3 className="text-xl font-bold text-brand-primary">Enterprise</h3>
               <div className="mt-4 flex items-baseline">
                 <span className="text-4xl font-extrabold text-brand-primary">$99</span>
                 <span className="ml-1 text-slate-500">/mo</span>
               </div>
               <button
-                onClick={() => handlePlanSelect('enterprise')}
-                className="mt-8 w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-brand-primary rounded-xl font-bold transition-colors"
+                disabled
+                className="mt-8 w-full py-3 px-4 bg-slate-100 text-slate-400 rounded-xl font-bold cursor-not-allowed"
               >
-                Contact Sales
+                Coming Soon
               </button>
               <ul className="mt-8 space-y-4">
                 {["Unlimited Analysis", "API Access", "Custom Integration", "Dedicated Monitor"].map((feat, i) => (
