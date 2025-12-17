@@ -21,3 +21,4 @@ watchfiles>=0.21.0
 google-api-core
 grpcio
 grpcio-status
+PyJWT>=2.8.0
