@@ -4,7 +4,12 @@ from app.config import settings
 
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+from sqlalchemy.pool import NullPool
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    poolclass=NullPool
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

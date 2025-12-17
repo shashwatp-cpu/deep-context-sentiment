@@ -8,9 +8,21 @@ from app.models.schemas import PostContext, CleanedComment, CommentSentiment
 
 class AIAgentLogger:
     def __init__(self):
-        # Create logs directory if it doesn't exist
-        self.logs_dir = Path("logs/ai_agent")
-        self.logs_dir.mkdir(parents=True, exist_ok=True)
+        # Determine logs directory
+        import os
+        # Check if we are in a read-only environment (like Vercel)
+        # We can try to write to 'logs', if it fails, fallback to '/tmp'
+        try:
+            self.logs_dir = Path("logs/ai_agent")
+            self.logs_dir.mkdir(parents=True, exist_ok=True)
+            # Test write permission
+            test_file = self.logs_dir / ".test"
+            test_file.touch()
+            test_file.unlink()
+        except (OSError, PermissionError):
+            # Fallback to /tmp for serverless environments
+            self.logs_dir = Path("/tmp/logs/ai_agent")
+            self.logs_dir.mkdir(parents=True, exist_ok=True)
         
         # Set up logging
         self.logger = logging.getLogger("ai_agent")
