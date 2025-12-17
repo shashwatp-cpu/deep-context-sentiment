@@ -9,7 +9,7 @@ import {
 import StatsGrid from '../components/StatsGrid';
 import SentimentChart from '../components/SentimentChart';
 import SentimentBadge from '../components/SentimentBadge';
-import { ExternalLink, Search, Sparkles, Loader2, Link as LinkIcon, ArrowLeft, LayoutGrid } from 'lucide-react';
+import { ExternalLink, Sparkles, Loader2, Link as LinkIcon, ArrowLeft, LayoutGrid } from 'lucide-react';
 
 const API_Base = process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
 
@@ -45,6 +45,77 @@ const Dashboard = () => {
     const urlParam = searchParams.get('url');
 
     let debounceTimer;
+
+    const fetchData = async (url) => {
+      setStatus('LOADING');
+      setError(null);
+      setBatchMode(false);
+      setSelectedAnalysis(null);
+      analyzingUrlRef.current = url;
+
+      // Create new AbortController
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        const token = await getToken();
+        const res = await axios.post(
+          `${API_Base}/analyze`,
+          { url },
+          {
+            signal: controller.signal,
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        setData(res.data);
+        setStatus('SUCCESS');
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Request canceled', err.message);
+        } else {
+          console.error(err);
+          setError(err.response?.data?.detail || "Failed to analyze URL.");
+          setStatus('ERROR');
+        }
+      } finally {
+        analyzingUrlRef.current = null;
+      }
+    };
+
+    const fetchBatchData = async (urls) => {
+      setStatus('LOADING');
+      setError(null);
+      setBatchMode(true);
+      setSelectedAnalysis(null);
+      analyzingUrlRef.current = urls.join(',');
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        const token = await getToken();
+        const res = await axios.post(
+          `${API_Base}/analyze/batch`,
+          { urls },
+          {
+            signal: controller.signal,
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        setData(res.data.results);
+        setStatus('SUCCESS');
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Request canceled', err.message);
+        } else {
+          console.error(err);
+          setError(err.response?.data?.detail || "Failed to analyze batch.");
+          setStatus('ERROR');
+        }
+      } finally {
+        analyzingUrlRef.current = null;
+      }
+    };
 
     // Only fetch if URL exists
     if (urlParam) {
@@ -82,78 +153,8 @@ const Dashboard = () => {
         abortControllerRef.current.abort();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
-
-  const fetchData = async (url) => {
-    setStatus('LOADING');
-    setError(null);
-    setBatchMode(false);
-    setSelectedAnalysis(null);
-    analyzingUrlRef.current = url;
-
-    // Create new AbortController
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    try {
-      const token = await getToken();
-      const res = await axios.post(
-        `${API_Base}/analyze`,
-        { url },
-        {
-          signal: controller.signal,
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setData(res.data);
-      setStatus('SUCCESS');
-    } catch (err) {
-      if (axios.isCancel(err)) {
-        console.log('Request canceled', err.message);
-      } else {
-        console.error(err);
-        setError(err.response?.data?.detail || "Failed to analyze URL.");
-        setStatus('ERROR');
-      }
-    } finally {
-      analyzingUrlRef.current = null;
-    }
-  };
-
-  const fetchBatchData = async (urls) => {
-    setStatus('LOADING');
-    setError(null);
-    setBatchMode(true);
-    setSelectedAnalysis(null);
-    analyzingUrlRef.current = urls.join(',');
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    try {
-      const token = await getToken();
-      const res = await axios.post(
-        `${API_Base}/analyze/batch`,
-        { urls },
-        {
-          signal: controller.signal,
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setData(res.data.results);
-      setStatus('SUCCESS');
-    } catch (err) {
-      if (axios.isCancel(err)) {
-        console.log('Request canceled', err.message);
-      } else {
-        console.error(err);
-        setError(err.response?.data?.detail || "Failed to analyze batch.");
-        setStatus('ERROR');
-      }
-    } finally {
-      analyzingUrlRef.current = null;
-    }
-  };
 
   const handleAnalyze = (e) => {
     e.preventDefault();
