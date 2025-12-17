@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell
@@ -9,7 +9,7 @@ import GlassCard from '../components/GlassCard';
 import StatsGrid from '../components/StatsGrid';
 import SentimentChart from '../components/SentimentChart';
 import SentimentBadge from '../components/SentimentBadge';
-import { ArrowLeft, ExternalLink, Search, Sparkles, Send } from 'lucide-react';
+import { ExternalLink, Search, Sparkles } from 'lucide-react';
 
 const API_Base = "http://localhost:8000/api/v1";
 

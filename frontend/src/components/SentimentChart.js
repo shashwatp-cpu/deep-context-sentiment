@@ -4,7 +4,7 @@ import GlassCard from './GlassCard';
 
 const COLORS = {
     'Supportive/Empathetic': '#003049', // Brand Primary
-    'Informative/Neutral': '#EAE2B7',   // Cream (Maybe too light? Let's use a Grey or light Blue) -> Actually, used Cream in badge.
+    // 'Informative/Neutral': '#EAE2B7', // Removed duplicate, using Slate 600 below
     // Pie chart on white background... Cream is invisible. 
     // Let's use #6B7280 (Gray) or #219EBC (Blue)
     // I'll use #219EBC (from Tailwind config mapping)

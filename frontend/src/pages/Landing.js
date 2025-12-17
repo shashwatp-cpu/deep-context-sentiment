@@ -3,8 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Sparkles, ArrowRight, CheckCircle, AlertTriangle,
-  BarChart, Zap, Users, Shield, Play,
-  MessageSquare, TrendingUp, Search
+  BarChart, Zap, Search
 } from 'lucide-react';
 
 const Landing = () => {
@@ -352,16 +351,16 @@ const Landing = () => {
           <div>
             <h4 className="font-bold mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-white/60">
-              <li><a href="#" className="hover:text-brand-accent">Features</a></li>
-              <li><a href="#" className="hover:text-brand-accent">Pricing</a></li>
-              <li><a href="#" className="hover:text-brand-accent">API</a></li>
+              <li><a href="/" className="hover:text-brand-accent">Features</a></li>
+              <li><a href="/" className="hover:text-brand-accent">Pricing</a></li>
+              <li><a href="/" className="hover:text-brand-accent">API</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold mb-4">Legal</h4>
             <ul className="space-y-2 text-sm text-white/60">
-              <li><a href="#" className="hover:text-brand-accent">Privacy</a></li>
-              <li><a href="#" className="hover:text-brand-accent">Terms</a></li>
+              <li><a href="/" className="hover:text-brand-accent">Privacy</a></li>
+              <li><a href="/" className="hover:text-brand-accent">Terms</a></li>
             </ul>
           </div>
         </div>
