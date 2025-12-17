@@ -6,7 +6,8 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased selection:bg-fuchsia-500/30;
+    @apply antialiased selection:bg-brand-primary/30;
+    @apply bg-white text-slate-800;
   }
 }
 

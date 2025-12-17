@@ -3,12 +3,12 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import GlassCard from './GlassCard';
 
 const COLORS = {
-    'Supportive/Empathetic': '#10B981',
-    'Informative/Neutral': '#3B82F6',
-    'Critical/Disapproving': '#EF4444',
-    'Sarcastic/Ironic': '#F59E0B',
-    'Angry/Hostile': '#DC2626',
-    'Appreciative/Praising': '#8B5CF6',
+    'Supportive/Empathetic': '#22d3ee',
+    'Informative/Neutral': '#64748b',
+    'Critical/Disapproving': '#fb923c',
+    'Sarcastic/Ironic': '#e879f9',
+    'Angry/Hostile': '#f97373',
+    'Appreciative/Praising': '#4ade80',
 };
 
 const SentimentChart = ({ data }) => {
@@ -22,8 +22,8 @@ const SentimentChart = ({ data }) => {
         .filter(item => item.value > 0); // Only show relevant segments
 
     return (
-        <GlassCard className="h-[400px] flex flex-col">
-            <h3 className="text-xl font-semibold mb-4 text-slate-100">Sentiment Distribution</h3>
+        <GlassCard className="h-[400px] flex flex-col items-center justify-center">
+            <h3 className="text-xl font-semibold mb-4 text-slate-50 tracking-tight">Sentiment Distribution</h3>
             <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -31,20 +31,34 @@ const SentimentChart = ({ data }) => {
                             data={chartData}
                             cx="50%"
                             cy="50%"
-                            innerRadius={60}
-                            outerRadius={100}
+                            innerRadius={80}
+                            outerRadius={120}
                             paddingAngle={5}
                             dataKey="value"
+                            stroke="none"
                         >
                             {chartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#94a3b8'} stroke="none" />
+                                <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#64748b'} stroke="none" />
                             ))}
                         </Pie>
                         <Tooltip
-                            contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
-                            itemStyle={{ color: '#fff' }}
+                            contentStyle={{
+                                backgroundColor: '#020617',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(148,163,184,0.35)',
+                                color: '#e5e7eb',
+                                boxShadow: '0 18px 45px rgba(15,23,42,0.85)'
+                            }}
+                            itemStyle={{ color: '#e5e7eb', fontWeight: 500 }}
                         />
-                        <Legend verticalAlign="bottom" height={36} wrapperStyle={{ paddingTop: '20px' }} />
+                        <Legend
+                            verticalAlign="bottom"
+                            height={36}
+                            iconType="circle"
+                            formatter={(value) => (
+                                <span className="ml-1 text-xs font-medium text-slate-300">{value}</span>
+                            )}
+                        />
                     </PieChart>
                 </ResponsiveContainer>
             </div>

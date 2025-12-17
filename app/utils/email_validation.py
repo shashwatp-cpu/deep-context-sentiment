@@ -1,19 +1,26 @@
-DISPOSABLE_DOMAINS = {
-    "mailinator.com",
-    "tempmail.com",
-    "guerrillamail.com",
-    "yopmail.com",
-    "10minutemail.com",
-    "sharklasers.com",
-    "throwawaymail.com",
-    "getairmail.com",
-    "mailna.me",
-    "temp-mail.org"
+REPUTED_DOMAINS = {
+    "gmail.com",
+    "googlemail.com",
+    "outlook.com",
+    "hotmail.com",
+    "live.com",
+    "yahoo.com",
+    "yahoo.co.uk",
+    "yahoo.co.in",
+    "icloud.com",
+    "me.com",
+    "msn.com",
+    "aol.com",
+    "protonmail.com",
+    "proton.me",
+    "zoho.com",
+    "gmx.com",
+    "mail.com"
 }
 
-def is_disposable_email(email: str) -> bool:
+def is_reputed_email(email: str) -> bool:
     try:
         domain = email.split('@')[1].lower()
-        return domain in DISPOSABLE_DOMAINS
+        return domain in REPUTED_DOMAINS
     except IndexError:
         return False

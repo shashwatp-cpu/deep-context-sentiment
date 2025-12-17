@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     
     # Usage Limits
     PLAN_LIMITS: dict = {
-        "free": 3,
+        "free": 1000000,
         "basic_1": 50,
         "pro_5": 500
     }

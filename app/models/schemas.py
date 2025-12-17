@@ -20,8 +20,12 @@ class SentimentCategory(str, Enum):
     ANGRY_HOSTILE = "Angry/Hostile"
 
 
+
 class AnalysisRequest(BaseModel):
     url: HttpUrl
+
+class BatchAnalysisRequest(BaseModel):
+    urls: List[HttpUrl]
 
 
 class CleanedComment(BaseModel):
@@ -77,6 +81,13 @@ class AnalysisResponse(BaseModel):
     allComments: Dict[str, List[str]]
     processingTime: float
     batchesProcessed: int
+
+
+class BatchAnalysisResponse(BaseModel):
+    results: List[AnalysisResponse]
+    total_processing_time: float
+    successful_count: int
+    failed_count: int
 
 class UserBase(BaseModel):
     email: str
