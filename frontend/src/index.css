@@ -6,7 +6,12 @@
 
 @layer base {
   body {
-    @apply bg-brand-cream text-brand-primary antialiased selection:bg-brand-accent/30;
+    @apply antialiased selection:bg-brand-accent/30;
+    @apply bg-slate-950 text-slate-100;
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.18), transparent 55%),
+      radial-gradient(circle at 100% 0%, rgba(168, 85, 247, 0.18), transparent 55%),
+      radial-gradient(circle at 50% 100%, rgba(236, 72, 153, 0.16), transparent 60%);
   }
 }
 

@@ -1,12 +1,12 @@
 import React from 'react';
 
 const sentimentColors = {
-    'Supportive/Empathetic': 'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
-    'Informative/Neutral': 'bg-brand-cream text-brand-primary border-brand-primary/10',
-    'Critical/Disapproving': 'bg-brand-red/10 text-brand-red border-brand-red/20',
-    'Sarcastic/Ironic': 'bg-brand-orange/10 text-brand-orange border-brand-orange/20',
-    'Angry/Hostile': 'bg-brand-red/20 text-brand-red border-brand-red/30 font-bold',
-    'Appreciative/Praising': 'bg-brand-accent/20 text-brand-orange border-brand-accent/40',
+    'Supportive/Empathetic': 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40',
+    'Informative/Neutral': 'bg-slate-700/60 text-slate-200 border-slate-500/60',
+    'Critical/Disapproving': 'bg-amber-500/15 text-amber-300 border-amber-400/40',
+    'Sarcastic/Ironic': 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-400/40',
+    'Angry/Hostile': 'bg-rose-500/20 text-rose-300 border-rose-400/60 font-semibold',
+    'Appreciative/Praising': 'bg-cyan-500/15 text-cyan-300 border-cyan-400/40',
 };
 
 const SentimentBadge = ({ sentiment, className = '' }) => {
@@ -15,7 +15,7 @@ const SentimentBadge = ({ sentiment, className = '' }) => {
     const colorClass = sentimentColors[key];
 
     return (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${colorClass} ${className}`}>
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[0.65rem] uppercase tracking-[0.16em] border ${colorClass} ${className}`}>
             {sentiment}
         </span>
     );

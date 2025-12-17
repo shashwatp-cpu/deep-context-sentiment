@@ -112,10 +112,10 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen font-sans p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen font-sans px-4 py-8 md:px-8 max-w-7xl mx-auto space-y-10 bg-gradient-to-b from-slate-950/80 via-slate-950/40 to-slate-950">
 
       {/* Input Section */}
-      <section className="bg-white rounded-3xl p-1 shadow-lg shadow-brand-primary/5 max-w-3xl mx-auto transform hover:scale-[1.01] transition-transform duration-300">
+      <section className="max-w-3xl mx-auto rounded-3xl p-[1px] bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-emerald-400 shadow-[0_22px_60px_rgba(15,23,42,0.9)]">
         <form onSubmit={handleAnalyze} className="relative flex items-center">
           <div className="pl-6 text-slate-400">
             <Search className="w-5 h-5" />
@@ -125,13 +125,13 @@ const Dashboard = () => {
             value={inputUrl}
             onChange={(e) => setInputUrl(e.target.value)}
             placeholder="Paste YouTube or Social Media Link..."
-            className="w-full py-4 px-4 text-slate-700 bg-transparent text-lg placeholder:text-slate-400 focus:outline-none"
+            className="w-full py-4 px-4 text-slate-100 bg-slate-950/90 text-lg placeholder:text-slate-500 focus:outline-none rounded-l-3xl"
             required
           />
           <button
             type="submit"
             disabled={status === 'LOADING'}
-            className="m-2 px-8 py-3 bg-brand-primary text-white rounded-2xl font-bold hover:bg-brand-primary/90 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="m-2 px-8 py-3 bg-cyan-500 text-slate-950 rounded-2xl font-semibold hover:bg-cyan-400 hover:-translate-y-0.5 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/40"
           >
             {status === 'LOADING' ? <Sparkles className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
             <span>Analyze</span>
@@ -172,7 +172,7 @@ const Dashboard = () => {
             key="dashboard"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
+            className="space-y-10"
           >
 
             {/* Context Header */}
@@ -181,25 +181,25 @@ const Dashboard = () => {
                 <img
                   src={data.postContext.images[0]}
                   alt="Content Thumbnail"
-                  className="w-full md:w-64 aspect-video object-cover rounded-2xl shadow-lg border border-white/20"
+                  className="w-full md:w-64 aspect-video object-cover rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.75)] border border-slate-800"
                 />
               )}
               <div className="flex-1 space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className="bg-brand-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                  <span className="bg-cyan-500/20 text-cyan-300 text-[0.65rem] font-semibold px-3 py-1 rounded-full uppercase tracking-[0.16em] border border-cyan-400/40">
                     {data?.platform}
                   </span>
-                  <span className="text-slate-500 text-xs font-medium">
+                  <span className="text-slate-400 text-xs font-medium">
                     {new Date(data?.timestamp).toLocaleString()}
                   </span>
-                  <a href={data?.postUrl} target="_blank" rel="noreferrer" className="text-brand-primary hover:text-brand-orange transition-colors">
+                  <a href={data?.postUrl} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-cyan-400 transition-colors">
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold text-brand-primary leading-tight">
+                <h1 className="text-3xl md:text-4xl font-semibold text-slate-50 leading-tight tracking-tight">
                   {data?.postContext?.title || "Analyzed Content"}
                 </h1>
-                <p className="text-slate-600 leading-relaxed max-w-3xl">
+                <p className="text-slate-300 leading-relaxed max-w-3xl">
                   {data?.postContext?.text || data?.postContext?.description}
                 </p>
               </div>
@@ -214,21 +214,21 @@ const Dashboard = () => {
             {/* Top Comments Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-3">
-                <h3 className="text-2xl font-bold text-brand-primary mb-6 flex items-center gap-2">
-                  <span className="w-2 h-8 bg-brand-accent rounded-full display-block"></span>
+                <h3 className="text-2xl font-semibold text-slate-50 mb-6 flex items-center gap-3">
+                  <span className="w-1 h-8 bg-gradient-to-b from-cyan-400 via-fuchsia-500 to-emerald-400 rounded-full block"></span>
                   Key Insights from Comments
                 </h3>
-                <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+                <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 [column-fill:_balance]">
                   {Object.entries(data?.topComments || {}).map(([category, comments]) => (
                     <div key={category} className="break-inside-avoid">
-                      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                        <div className="mb-4 pb-4 border-b border-slate-50 flex items-center justify-between">
+                      <div className="rounded-2xl p-6 bg-slate-900/80 border border-slate-800/80 shadow-[0_18px_45px_rgba(15,23,42,0.9)] hover:border-cyan-500/40 hover:-translate-y-0.5 transition-all duration-300">
+                        <div className="mb-4 pb-4 border-b border-slate-800 flex items-center justify-between">
                           <SentimentBadge sentiment={category.replace(/_/g, '/').replace(/\b\w/g, l => l.toUpperCase())} />
                         </div>
                         <div className="space-y-4">
                           {comments.map((comment, idx) => (
-                            <div key={idx} className="relative pl-4 border-l-2 border-brand-primary/10">
-                              <p className="text-slate-600 text-sm italic">"{comment}"</p>
+                            <div key={idx} className="relative pl-4 border-l-2 border-slate-700/80">
+                              <p className="text-slate-300 text-sm italic">"{comment}"</p>
                             </div>
                           ))}
                         </div>

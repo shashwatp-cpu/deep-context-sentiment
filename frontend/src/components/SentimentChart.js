@@ -3,21 +3,12 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import GlassCard from './GlassCard';
 
 const COLORS = {
-    'Supportive/Empathetic': '#003049', // Brand Primary
-    // 'Informative/Neutral': '#EAE2B7', // Removed duplicate, using Slate 600 below
-    // Pie chart on white background... Cream is invisible. 
-    // Let's use #6B7280 (Gray) or #219EBC (Blue)
-    // I'll use #219EBC (from Tailwind config mapping)
-    // Wait, I defined brand colors in tailwind.config.js but Recharts needs HEX.
-    // Brand Primary: #003049
-    // Brand Red: #D62828
-    // Brand Orange: #F77F00
-    // Brand Accent: #FCBF49
-    'Informative/Neutral': '#475569',   // Slate 600 for contrast
-    'Critical/Disapproving': '#D62828', // Brand Red
-    'Sarcastic/Ironic': '#F77F00',      // Brand Orange
-    'Angry/Hostile': '#991B1B',         // Darker Red
-    'Appreciative/Praising': '#FCBF49', // Brand Accent (Yellow)
+    'Supportive/Empathetic': '#22d3ee',
+    'Informative/Neutral': '#64748b',
+    'Critical/Disapproving': '#fb923c',
+    'Sarcastic/Ironic': '#e879f9',
+    'Angry/Hostile': '#f97373',
+    'Appreciative/Praising': '#4ade80',
 };
 
 const SentimentChart = ({ data }) => {
@@ -32,7 +23,7 @@ const SentimentChart = ({ data }) => {
 
     return (
         <GlassCard className="h-[400px] flex flex-col items-center justify-center">
-            <h3 className="text-xl font-bold mb-4 text-brand-primary">Sentiment Distribution</h3>
+            <h3 className="text-xl font-semibold mb-4 text-slate-50 tracking-tight">Sentiment Distribution</h3>
             <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -47,24 +38,26 @@ const SentimentChart = ({ data }) => {
                             stroke="none"
                         >
                             {chartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#94a3b8'} stroke="none" />
+                                <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#64748b'} stroke="none" />
                             ))}
                         </Pie>
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: '#fff',
+                                backgroundColor: '#020617',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(0,0,0,0.1)',
-                                color: '#003049',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                border: '1px solid rgba(148,163,184,0.35)',
+                                color: '#e5e7eb',
+                                boxShadow: '0 18px 45px rgba(15,23,42,0.85)'
                             }}
-                            itemStyle={{ color: '#003049', fontWeight: 600 }}
+                            itemStyle={{ color: '#e5e7eb', fontWeight: 500 }}
                         />
                         <Legend
                             verticalAlign="bottom"
                             height={36}
                             iconType="circle"
-                            formatter={(value) => <span className="text-slate-600 font-medium ml-1">{value}</span>}
+                            formatter={(value) => (
+                                <span className="ml-1 text-xs font-medium text-slate-300">{value}</span>
+                            )}
                         />
                     </PieChart>
                 </ResponsiveContainer>
