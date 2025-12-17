@@ -20,10 +20,12 @@ from app.utils.batch_processor import BatchProcessor
 logger = structlog.get_logger()
 router = APIRouter()
 
-from app.models.user import User
+# from app.models.user import User  # Removed (Stateless)
+# We use a simple object for current_user, typing can be Any or a specific Protocol
+from typing import Any
+User = Any # Placeholder type alias for now
 from app.api.auth import get_current_user
-from sqlalchemy.orm import Session
-from app.core.database import get_db
+from fastapi import Depends
 from fastapi import Depends
 
 
@@ -32,8 +34,7 @@ import asyncio
 
 async def process_single_url(
     url_str: str,
-    current_user: User,
-    db: Session
+    current_user: User
 ) -> AnalysisResponse:
     """Helper function to process a single URL."""
     start_time = time.time()
@@ -104,26 +105,14 @@ async def process_single_url(
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_url(
     request: AnalysisRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(get_current_user)
 ) -> AnalysisResponse:
     """Analyze sentiment of comments on a social media post."""
-    # Check Usage Limits
-    plan_limit = settings.PLAN_LIMITS.get(current_user.plan_type, 3) 
-    if current_user.request_count >= plan_limit:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Usage limit reached for plan '{current_user.plan_type}'. Please upgrade."
-        )
-
+    # Stateless analysis - No DB, No Limits
+    
     try:
-        response = await process_single_url(str(request.url), current_user, db)
-        
-        # Increment Usage Count
-        current_user.request_count += 1
-        current_user.last_request_date = datetime.utcnow()
-        db.commit()
-
+        # process_single_url now does not need DB
+        response = await process_single_url(str(request.url), current_user)
         return response
         
     except ValueError as e:
@@ -145,24 +134,13 @@ from app.models.schemas import BatchAnalysisRequest, BatchAnalysisResponse
 @router.post("/analyze/batch", response_model=BatchAnalysisResponse)
 async def analyze_batch(
     request: BatchAnalysisRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(get_current_user)
 ) -> BatchAnalysisResponse:
     """Analyze multiple URLs in parallel."""
     start_time = time.time()
     
-    # Check Usage Limits - Batch counts as multiple requests
-    plan_limit = settings.PLAN_LIMITS.get(current_user.plan_type, 3)
-    urls_count = len(request.urls)
-    
-    if current_user.request_count + urls_count > plan_limit:
-         raise HTTPException(
-            status_code=403,
-            detail=f"Batch size ({urls_count}) exceeds remaining limit. Upgrade to process more."
-        )
-
     tasks = [
-        process_single_url(str(url), current_user, db) 
+        process_single_url(str(url), current_user) 
         for url in request.urls
     ]
     
@@ -177,17 +155,9 @@ async def analyze_batch(
             if isinstance(res, Exception):
                 failed_count += 1
                 logger.error("batch_item_failed", error=str(res))
-                # Optionally handle partial failures or return error objects
-                # For now, we just skip or return a dummy/error response if needed
-                # But to keep schemas simple, lets filter out failed ones or re-raise if all fail
             else:
                 successful_count += 1
                 processed_results.append(res)
-        
-        # Increment Usage Count
-        current_user.request_count += successful_count
-        current_user.last_request_date = datetime.utcnow()
-        db.commit()
         
         total_time = time.time() - start_time
         

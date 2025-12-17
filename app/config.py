@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Database
-    DATABASE_URL: Optional[str] = "postgresql://postgres:$Lh7$Svb42sz/ry@db.wlqhswlnzyuklfqtsdib.supabase.co:5432/postgres"
+    # Removed for stateless Vercel deployment
     
     # Model Configuration
     GEMINI_MODEL: str = "gemini-2.5-flash-lite"
@@ -45,11 +45,7 @@ class Settings(BaseSettings):
     INSTAGRAM_MAX_COMMENTS: int = 100
     
     # Usage Limits
-    PLAN_LIMITS: dict = {
-        "free": 1000000,
-        "basic_1": 50,
-        "pro_5": 500
-    }
+    # Removed for stateless Vercel deployment
     
     # # Optional Integrations
     # REDIS_HOST: str = "localhost"
@@ -64,6 +60,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Allow extra env vars in .env without raising error
 
 
 @lru_cache()
