@@ -1,13 +1,47 @@
+# Environment Variables
 .env
+.env.local
+.env.*.local
 credentials.json
+
+# Python
 __pycache__/
-*.pyc 
-.pytest_cache/
-.coverage
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
 venv/
 .venv/
-logs/
-tests/
-node_modules/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.gitignore
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+
+# Distribution / Packaging
+dist/
 build/
+*.egg-info/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
 .DS_Store
+
+# Logs
+logs/
+*.log

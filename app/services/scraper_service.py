@@ -148,12 +148,13 @@ class ScraperService:
 
     async def scrape_instagram(self, url: str) -> Tuple[PostContext, List[CleanedComment]]:
         """Scrape Instagram post info and comments."""
-        # Get post info
+        # Get post info using the main scraper which supports direct URLs
         post_data = await self._make_apify_request(
-            "apify~instagram-post-scraper",
+            "apify~instagram-scraper",
             {
-                "username": [url],
-                "skipPinnedPosts": False
+                "directUrls": [url],
+                "resultsType": "posts",
+                "resultsLimit": 1
             }
         )
 
@@ -169,9 +170,21 @@ class ScraperService:
 
         # Create post context
         post_info = post_data[0] if post_data else {}
+        
+        # Extract images safely
+        images = []
+        if post_info.get("displayUrl"):
+            images.append(post_info.get("displayUrl"))
+        elif post_info.get("thumbnailUrl"):
+            images.append(post_info.get("thumbnailUrl"))
+        
+        # Also check for carousel images
+        if not images and post_info.get("images"):
+             images = post_info.get("images")
+
         post_context = PostContext(
             platform=Platform.INSTAGRAM,
-            images=post_info.get("images", []),
+            images=images,
             alt=post_info.get("alt"),
             caption=post_info.get("caption")
         )
