@@ -15,7 +15,7 @@ async def get_current_user(authorization: str = Header(None)):
         token = authorization.split(" ")[1]
         
         # Decode without verification to get claims (stateless)
-        # In a real app, you would verify signature with Clerk's public key
+        # Using PyJWT
         payload = jwt.decode(token, options={"verify_signature": False})
         
         clerk_id = payload.get("sub")
