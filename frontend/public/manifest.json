@@ -1,6 +1,6 @@
 {
-  "short_name": "Deep Context",
-  "name": "Deep Context Sentiment Analysis",
+  "short_name": "EliminateContext",
+  "name": "EliminateContext - AI Sentiment Analysis",
   "icons": [
     {
       "src": "logo.svg",
@@ -10,6 +10,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#00A99D",
+  "theme_color": "#ccff00",
   "background_color": "#ffffff"
 }
