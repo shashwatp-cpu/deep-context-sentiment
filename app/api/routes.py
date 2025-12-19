@@ -1,7 +1,7 @@
 import time
 from httpx import post
 import structlog
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from typing import List
 from datetime import datetime
 
@@ -15,6 +15,7 @@ from app.models.schemas import (
 from app.services.platform_detector import PlatformDetector
 from app.services.scraper_service import ScraperService
 from app.services.sentiment_service import SentimentService
+from app.services.pdf_service import PDFService
 from app.utils.batch_processor import BatchProcessor
 
 logger = structlog.get_logger()
@@ -170,6 +171,25 @@ async def analyze_batch(
 
     except Exception as e:
         logger.error("batch_analysis_error", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/export/pdf")
+async def export_pdf_report(data: AnalysisResponse, current_user: User = Depends(get_current_user)):
+    """Generate and download a PDF report for the given analysis."""
+    try:
+        pdf_bytes = PDFService.generate_pdf(data)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=report_{data.postUrl.split('/')[-1]}.pdf"
+            }
+        )
+    except Exception as e:
+        logger.error("pdf_export_failed", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/analyze/demo", response_model=AnalysisResponse)

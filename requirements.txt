@@ -19,4 +19,5 @@ watchfiles>=0.21.0
 google-api-core
 grpcio
 grpcio-status
-PyJWT>=2.8.0
+fpdf2>=2.7.0
+matplotlib>=3.8.0

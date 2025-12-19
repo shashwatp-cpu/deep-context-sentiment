@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { Brain, Search, Loader2, ArrowLeft, BarChart2 } from "lucide-react";
+import { Brain, Search, Loader2, ArrowLeft, BarChart2, ExternalLink, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,7 +45,9 @@ export default function Dashboard() {
         setCurrentResult(null);
 
         // Split URLs by newline or comma and filter empty
-        const urls = inputUrl.split(/[\n,]+/).map(u => u.trim()).filter(u => u.length > 0);
+        // Split URLs by newline or comma and filter empty, then deduplicate
+        const rawUrls = inputUrl.split(/[\n,]+/).map(u => u.trim()).filter(u => u.length > 0);
+        const urls = Array.from(new Set(rawUrls));
 
         try {
             const token = await getToken();
@@ -118,6 +120,35 @@ export default function Dashboard() {
         setCurrentResult(null);
     }
 
+    const handleExportPDF = async () => {
+        if (!currentResult) return;
+        try {
+            const token = await getToken();
+            const res = await fetch("http://localhost:8000/api/v1/export/pdf", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(currentResult)
+            });
+
+            if (!res.ok) throw new Error("Failed to generate PDF");
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `report_${currentResult.platform}_${Date.now()}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (err) {
+            console.error("Export failed", err);
+            // Optionally show error toast
+        }
+    };
+
     // Helper to get chart data for a result
     const getChartData = (res: any) => {
         return res?.summary ? Object.keys(SENTIMENT_CONFIG).map(key => ({
@@ -157,21 +188,21 @@ export default function Dashboard() {
                         <div className="mb-12">
                             <h1 className="text-4xl font-bold mb-4">Analyze Sentiment Context</h1>
                             <p className="text-gray-600 text-lg">
-                                Enter one or more URLs (one per line) from YouTube, Reddit, or Twitter/X.
+                                Enter one or more URLs (one per line) from YouTube, Facebook, Instagram, or Twitter/X.
                             </p>
                         </div>
 
                         <div className="mb-16 relative z-10">
                             <form onSubmit={handleAnalyze} className="relative shadow-2xl rounded-3xl bg-white overflow-hidden border border-black/5">
                                 <textarea
-                                    placeholder="https://www.youtube.com/watch?v=...&#10;https://www.reddit.com/r/..."
+                                    placeholder="https://www.youtube.com/watch?v=...&#10;https://twitter.com/user/status/..."
                                     className="w-full h-48 card-textarea p-8 text-lg resize-none outline-none text-gray-700 placeholder:text-gray-300"
                                     value={inputUrl}
                                     onChange={(e) => setInputUrl(e.target.value)}
                                 />
                                 <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-100">
                                     <div className="text-sm text-gray-400 font-medium">
-                                        {inputUrl.split(/[\n,]+/).filter(u => u.trim().length > 0).length} URL(s) detected
+                                        {new Set(inputUrl.split(/[\n,]+/).filter(u => u.trim().length > 0)).size} Unique URL(s) detected
                                     </div>
                                     <Button
                                         type="submit"
@@ -265,6 +296,19 @@ export default function Dashboard() {
                                 <ArrowLeft className="w-4 h-4" />
                                 {batchResults.length > 0 ? "Back to Results" : "Analyze Another"}
                             </Button>
+
+                            <div className="flex gap-3">
+                                <a href={currentResult.postUrl} target="_blank" rel="noopener noreferrer">
+                                    <Button variant="outline" className="gap-2">
+                                        <span className="hidden sm:inline">Visit Link</span>
+                                        <ExternalLink className="w-4 h-4" />
+                                    </Button>
+                                </a>
+                                <Button className="gap-2 bg-black text-white hover:bg-gray-800" onClick={handleExportPDF}>
+                                    <Download className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Export PDF</span>
+                                </Button>
+                            </div>
                         </div>
 
                         {/* Summary Row */}
@@ -321,6 +365,38 @@ export default function Dashboard() {
                                     <CardHeader><CardTitle>Context Analysis</CardTitle></CardHeader>
                                     <CardContent>
                                         <div className="space-y-4">
+                                            {/* Preview / Thumbnail */}
+                                            <div className="rounded-lg overflow-hidden border border-black/10 bg-gray-100 relative aspect-video flex items-center justify-center">
+                                                {currentResult.postContext?.images?.[0] ? (
+                                                    <img src={currentResult.postContext.images[0]} alt="Post Thumbnail" className="w-full h-full object-cover" />
+                                                ) : currentResult.platform === "youtube" ? (
+                                                    <img
+                                                        src={`https://img.youtube.com/vi/${(() => {
+                                                            const match = currentResult.postUrl.match(/(?:youtu\.be\/|v=)([^&]+)/);
+                                                            return match ? match[1] : '';
+                                                        })()}/hqdefault.jpg`}
+                                                        alt="Video Thumbnail"
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => (e.currentTarget.src = "/placeholder-video.png")}
+                                                    />
+                                                ) : (
+                                                    <div className="text-center p-4">
+                                                        <ExternalLink className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                                                        <span className="text-xs text-gray-500 block">No visual preview available</span>
+                                                    </div>
+                                                )}
+
+                                                {/* Overlay Link */}
+                                                <a
+                                                    href={currentResult.postUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center group"
+                                                >
+                                                    <ExternalLink className="text-white opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all drop-shadow-md w-8 h-8" />
+                                                </a>
+                                            </div>
+
                                             <div>
                                                 <h4 className="text-sm font-bold text-gray-500 mb-1">Platform</h4>
                                                 <div className="flex items-center gap-2">
