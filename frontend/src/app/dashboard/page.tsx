@@ -58,7 +58,7 @@ export default function Dashboard() {
 
             if (urls.length === 1) {
                 // Single Analysis
-                const res = await fetch("http://localhost:8000/api/v1/analyze", {
+                const res = await fetch("/api/v1/analyze", {
                     method: "POST",
                     headers,
                     body: JSON.stringify({ url: urls[0], platform: "auto" })
@@ -74,7 +74,7 @@ export default function Dashboard() {
                 setView("detail");
             } else {
                 // Batch Analysis
-                const res = await fetch("http://localhost:8000/api/v1/analyze/batch", {
+                const res = await fetch("/api/v1/analyze/batch", {
                     method: "POST",
                     headers,
                     body: JSON.stringify({ urls })
@@ -124,7 +124,7 @@ export default function Dashboard() {
         if (!currentResult) return;
         try {
             const token = await getToken();
-            const res = await fetch("http://localhost:8000/api/v1/export/pdf", {
+            const res = await fetch("/api/v1/export/pdf", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
