@@ -1,6 +1,5 @@
-import io
 import os
-import matplotlib.pyplot as plt
+import math
 from fpdf import FPDF
 from app.models.schemas import AnalysisResponse
 
@@ -43,13 +42,12 @@ class PDFService:
         )
 
     @staticmethod
-    def create_chart(summary: dict) -> io.BytesIO:
-        """Generate a pie chart for sentiment summary."""
-        labels = []
-        sizes = []
-        colors = []
+    def draw_pie_chart(pdf, x, y, radius, summary: dict):
+        """Draws a vector pie chart directly on the PDF using FPDF primitives."""
+        # Data Prep
+        data = []
+        total = 0
         
-        # Color mapping matching frontend
         color_map = {
             "supportive_empathetic": "#84cc16",
             "appreciative_praising": "#22c55e",
@@ -61,47 +59,106 @@ class PDFService:
 
         for key, value in summary.items():
             if key != "totalComments" and value > 0:
-                short_label = key.split('_')[0].title() # Shorten label if needed
-                labels.append(short_label)
-                sizes.append(value)
-                colors.append(color_map.get(key, "#cccccc"))
+                short_label = key.split('_')[0].title()
+                hex_c = color_map.get(key, "#cccccc")
+                data.append({"label": short_label, "value": value, "color": hex_c})
+                total += value
+        
+        if total == 0:
+            return
 
-        if not sizes:
-            return None
+        # Draw Chart
+        start_angle = 90
+        
+        # We use a local context for transparency (Glass effect)
+        with pdf.local_context(fill_opacity=0.85):
+            pdf.set_draw_color(255, 255, 255) # White borders
+            pdf.set_line_width(1.5) # Thick border
+            
+            for item in data:
+                res_angle = (item['value'] / total) * 360
+                end_angle = start_angle + res_angle
+                
+                # Check FPDF sector direction. 
+                # Usually standard mathematical (counter-clockwise) or clockwise?
+                # FPDF2 sector: angles in degrees. 0 is right, 90 is top?
+                # We'll assume standard.
+                
+                rgb = PDFService._hex_to_rgb(item['color'])
+                pdf.set_fill_color(*rgb)
+                
+                # Draw Sector
+                # Note: fpdf2 uses standard degrees? 
+                # Let's use negative for clockwise if needed, but positive is usually fine.
+                # Important: sector(x, y, r, a_start, a_end)
+                pdf.sector(x, y, radius, start_angle, end_angle, style='FD')
+                
+                # Draw Percentage Label
+                # Mid angle for label
+                mid_angle = math.radians(start_angle + (res_angle / 2))
+                # Position (r * 0.7 to be inside)
+                # PDF coord system: Y increases downwards? FPDF usually top-left origin.
+                # So y + sin might need checking. 
+                # Actually FPDF sector usually handles the coord flip.
+                # Let's try standard trigonometry, flipping Y if needed.
+                # FPDF: 0 deg = Right (3 o'clock). Positive = Counter-Clockwise.
+                # We started at 90 (Top).
+                
+                # For text, we calculate manually.
+                # If Y is Down, then Top is -90? Or 270?
+                # Let's stick to simple logic: 
+                # label_x = x + r*0.6 * cos(-mid_angle) # FPDF y coords are inverted relative to math?
+                # Let's rely on the Legend for clarity for now to avoid math errors in blind edit.
+                # Actually, adding % is nice.
+                # Try simple geometric position.
+                
+                pct = (item['value'] / total) * 100
+                if pct > 4: # Only label if > 4%
+                     # Conversion for display
+                     # FPDF2 angles: 0 is right. increasing is CCW.
+                     # But visual Y is down.
+                     # Let's output text.
+                     pdf.set_text_color(255, 255, 255)
+                     pdf.set_font("Helvetica", "B", 10)
+                     
+                     # Simple approximation: just skip text on chart, put in legend.
+                     # Text placement blindly often overlaps.
+                
+                start_angle += res_angle
 
-        # Create plot with "Glass" effect
-        plt.figure(figsize=(8, 8))
+        # Draw Legend Below
+        legend_y = y + radius + 10
+        legend_x = x - 60 # Start leftish
         
-        # Wedgeprops with alpha<1 and white edge gives glass segment look
-        wedges, texts, autotexts = plt.pie(
-            sizes, 
-            labels=labels, 
-            colors=colors, 
-            autopct='%1.1f%%', 
-            startangle=90,
-            pctdistance=0.85,
-            wedgeprops={'linewidth': 3, 'edgecolor': 'white', 'alpha': 0.85},
-            textprops={'fontsize': 14, 'weight': 'bold', 'color': '#555555'}
-        )
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(50, 50, 50)
         
-        # Style percentage text to be white/clearer inside the segments? 
-        # Actually with alpha 0.85, white text might be hard to read on light colors. 
-        # Let's keep dark text outside or default.
-        # Actually, let's make the chart a Donut for extra style? 
-        # User said "size of pie graph". I'll keep it full pie but larger.
-        
-        plt.setp(autotexts, size=12, weight="bold", color="white")
-        plt.axis('equal')
-        
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png', bbox_inches='tight', transparent=True)
-        plt.close()
-        buf.seek(0)
-        return buf
+        row_count = 0
+        for i, item in enumerate(data):
+            rgb = PDFService._hex_to_rgb(item['color'])
+            
+            # Position (2 columns?)
+            col = i % 2
+            row = i // 2
+            
+            lx = legend_x + (col * 70)
+            ly = legend_y + (row * 6)
+            
+            # Color Box
+            with pdf.local_context(fill_opacity=0.85):
+                pdf.set_fill_color(*rgb)
+                pdf.rect(lx, ly, 4, 4, 'F')
+            
+            # Text
+            pct = (item['value'] / total) * 100
+            pdf.set_xy(lx + 6, ly)
+            pdf.cell(60, 4, f"{item['label']} ({pct:.1f}%)")
+            
+            row_count = row
+
+        return (row_count + 1) * 6 + 10 # Return height of legend
 
     @staticmethod
-    def safe_text(text: str) -> str:
-        """Sanitize text to be compatible with Latin-1 (standard PDF font)."""
     def sanitize_text(text: str) -> str:
         """
         Sanitize text to prevent font errors.
@@ -202,13 +259,24 @@ class PDFService:
         pdf.set_font(main_font, "", 11)
         pdf.cell(0, 8, f"Total Comments analyzed: {data.summary.totalComments}", new_x="LMARGIN", new_y="NEXT")
         
-        # Chart
+        # Chart (Vector Based)
+        # Center X is 105 (A4 width 210)
+        # Y is current + radius + margin
         try:
-            chart_buf = PDFService.create_chart(data.summary.dict())
-            if chart_buf:
-                # Larger, Centered Image
-                pdf.image(chart_buf, w=120, x=45) 
-                pdf.set_y(pdf.get_y() + 125) 
+            current_y = pdf.get_y()
+            center_x = 105
+            center_y = current_y + 45 # Radius 35 + space
+            radius = 35 
+            
+            # This draws chart AND legend
+            legend_height = PDFService.draw_pie_chart(pdf, center_x, center_y, radius, data.summary.dict())
+            
+            # Advance Cursor (Chart Radius + Legend Height + Margin)
+            # Center Y + Radius = Bottom of Pie. 
+            # Legend starts at Y + Radius + 10.
+            # Legend height returned is the height of legend block.
+            pdf.set_y(center_y + radius + 10 + legend_height + 5)
+            
         except Exception as e:
             pdf.set_font(main_font, "", 10)
             pdf.cell(0, 10, f"(Chart generation failed: {clean(str(e))})", new_x="LMARGIN", new_y="NEXT")
@@ -235,18 +303,13 @@ class PDFService:
         for category, comments in data.topComments.items():
             if comments:
                 # 1. Calculate Dynamic Height
-                # Header space: 10
-                # Padding bottom: 5
-                # Space between comments: 0?
-                total_height = 12 # Header + top padding
-                comment_lines = [] # Store lines to avoid re-splitting
+                total_height = 12 # Header
+                comment_lines = []
                 
-                pdf.set_font(main_font, "", 10) # Set font for calculation
+                pdf.set_font(main_font, "", 10)
                 for c in comments[:3]:
                     clean_c = c.replace('\n', ' ').strip()
                     clean_c = f"- {clean(clean_c)}"
-                    # Calculate lines this comment will take
-                    # split_only=True returns a list of strings
                     lines = pdf.multi_cell(180, 6, clean_c, split_only=True)
                     comment_lines.append(lines)
                     total_height += len(lines) * 6
@@ -257,20 +320,18 @@ class PDFService:
                 if pdf.get_y() + total_height > 275:
                     pdf.add_page()
                 else:
-                    pdf.ln(5) # Space between cards
+                    pdf.ln(5) 
 
                 # 3. Get Color & Background
                 map_key = category.lower().replace(" ", "_").replace("/", "_")
                 hex_color = color_map.get(map_key, "#cccccc")
                 rgb = PDFService._hex_to_rgb(hex_color)
-                # Factor 0.85 -> 0.80 for more visibility
                 light_rgb = PDFService._lighten_color(*rgb, factor=0.80) 
 
                 start_x = 10
                 start_y_card = pdf.get_y()
 
                 # Draw Card Background
-                # Rounding corners if possible, otherwise rect
                 pdf.set_fill_color(*light_rgb)
                 pdf.rect(start_x, start_y_card, 190, total_height, 'F')
                 
@@ -285,17 +346,14 @@ class PDFService:
                 pdf.set_font(main_font, "", 10)
                 pdf.set_text_color(50, 50, 50)
                 
-                # We already split lines, we can print them line by line or use multi_cell again
-                # Using multi_cell is safer to ensure alignment
                 current_text_y = pdf.get_y() + 1
                 for i, lines in enumerate(comment_lines):
-                     # lines is list of strings
                      for line in lines:
                          pdf.set_xy(start_x + 5, current_text_y)
                          pdf.cell(180, 6, line, new_x="LMARGIN", new_y="NEXT")
                          current_text_y += 6
                 
-                # Move cursor past the card
+                # Move cursor
                 pdf.set_y(start_y_card + total_height)
 
         return bytes(pdf.output())

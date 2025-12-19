@@ -20,4 +20,4 @@ google-api-core
 grpcio
 grpcio-status
 fpdf2>=2.7.0
-matplotlib>=3.8.0
+
