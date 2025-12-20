@@ -10,7 +10,8 @@ from app.models.schemas import (
     AnalysisRequest,
     AnalysisResponse,
     Platform,
-    PostContext
+    PostContext,
+    Language
 )
 from app.services.platform_detector import PlatformDetector
 from app.services.scraper_service import ScraperService
@@ -35,7 +36,8 @@ import asyncio
 
 async def process_single_url(
     url_str: str,
-    current_user: User
+    current_user: User,
+    language: Language = Language.ENGLISH
 ) -> AnalysisResponse:
     """Helper function to process a single URL."""
     start_time = time.time()
@@ -69,7 +71,8 @@ async def process_single_url(
     from functools import partial
     analyze_func = partial(
         sentiment_service.analyze_batch_with_gemini,
-        url=url_str
+        url=url_str,
+        language=language
     )
     
     batch_results = await batch_processor.process_batches_parallel(
@@ -113,7 +116,7 @@ async def analyze_url(
     
     try:
         # process_single_url now does not need DB
-        response = await process_single_url(str(request.url), current_user)
+        response = await process_single_url(str(request.url), current_user, request.language)
         return response
         
     except ValueError as e:
@@ -141,7 +144,7 @@ async def analyze_batch(
     start_time = time.time()
     
     tasks = [
-        process_single_url(str(url), current_user) 
+        process_single_url(str(url), current_user, request.language) 
         for url in request.urls
     ]
     
