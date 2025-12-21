@@ -10,7 +10,8 @@ from app.models.schemas import (
     AnalysisRequest,
     AnalysisResponse,
     Platform,
-    PostContext
+    PostContext,
+    Language
 )
 from app.services.platform_detector import PlatformDetector
 from app.services.scraper_service import ScraperService
@@ -25,7 +26,7 @@ router = APIRouter()
 # We use a simple object for current_user, typing can be Any or a specific Protocol
 from typing import Any
 User = Any # Placeholder type alias for now
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user, check_and_increment_usage
 from fastapi import Depends
 from fastapi import Depends
 
@@ -35,7 +36,8 @@ import asyncio
 
 async def process_single_url(
     url_str: str,
-    current_user: User
+    current_user: User,
+    language: Language = Language.ENGLISH
 ) -> AnalysisResponse:
     """Helper function to process a single URL."""
     start_time = time.time()
@@ -69,7 +71,8 @@ async def process_single_url(
     from functools import partial
     analyze_func = partial(
         sentiment_service.analyze_batch_with_gemini,
-        url=url_str
+        url=url_str,
+        language=language
     )
     
     batch_results = await batch_processor.process_batches_parallel(
@@ -109,11 +112,14 @@ async def analyze_url(
     current_user: User = Depends(get_current_user)
 ) -> AnalysisResponse:
     """Analyze sentiment of comments on a social media post."""
+    # Check rate limit
+    await check_and_increment_usage(current_user.clerk_id)
+
     # Stateless analysis - No DB, No Limits
     
     try:
         # process_single_url now does not need DB
-        response = await process_single_url(str(request.url), current_user)
+        response = await process_single_url(str(request.url), current_user, request.language)
         return response
         
     except ValueError as e:
@@ -138,10 +144,13 @@ async def analyze_batch(
     current_user: User = Depends(get_current_user)
 ) -> BatchAnalysisResponse:
     """Analyze multiple URLs in parallel."""
+    # Check rate limit (counts as 1 request/batch or per URL? Let's count as 1 request for now to keep it simple, or iterate. The user asked for 5 times usage of tool, implying the action itself. If batch allows multiple, it might be a loophole, but let's stick to 1 tool usage = 1 API call for now.)
+    await check_and_increment_usage(current_user.clerk_id)
+
     start_time = time.time()
     
     tasks = [
-        process_single_url(str(url), current_user) 
+        process_single_url(str(url), current_user, request.language) 
         for url in request.urls
     ]
     

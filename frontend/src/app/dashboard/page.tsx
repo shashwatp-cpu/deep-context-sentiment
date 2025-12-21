@@ -11,13 +11,66 @@ import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 
 // Mapping backend keys to display labels and colors
-const SENTIMENT_CONFIG: Record<string, { label: string; color: string }> = {
-    supportive_empathetic: { label: "Supportive", color: "#84cc16" }, // lime-500
-    appreciative_praising: { label: "Appreciative", color: "#22c55e" }, // green-500
-    informative_neutral: { label: "Neutral", color: "#94a3b8" }, // slate-400
-    sarcastic_ironic: { label: "Sarcastic", color: "#a855f7" }, // purple-500
-    critical_disapproving: { label: "Critical", color: "#f59e0b" }, // amber-500
-    angry_hostile: { label: "Hostile", color: "#ef4444" }, // red-500
+const LANGUAGES = [
+    { value: "english", label: "English" },
+    { value: "hindi", label: "Hindi (हिंदी)" },
+    { value: "assamese", label: "Assamese (অসমীয়া)" },
+    { value: "malayalam", label: "Malayalam (മലയാളം)" },
+];
+
+const SENTIMENT_TRANSLATIONS: Record<string, Record<string, string>> = {
+    english: {
+        supportive_empathetic: "Supportive",
+        appreciative_praising: "Appreciative",
+        informative_neutral: "Neutral",
+        sarcastic_ironic: "Sarcastic",
+        critical_disapproving: "Critical",
+        angry_hostile: "Hostile",
+    },
+    hindi: {
+        supportive_empathetic: "सहायक",
+        appreciative_praising: "प्रशंसापूर्ण",
+        informative_neutral: "तटस्थ",
+        sarcastic_ironic: "व्यंग्यात्मक",
+        critical_disapproving: "आलोचनात्मक",
+        angry_hostile: "शत्रुतापूर्ण",
+    },
+    assamese: {
+        supportive_empathetic: "সহায়ক",
+        appreciative_praising: "প্ৰশংসাসূচক",
+        informative_neutral: "নিৰপেক্ষ",
+        sarcastic_ironic: "বক্রোক্তি",
+        critical_disapproving: "সমালোচনামূলক",
+        angry_hostile: "শত্ৰুতাপূৰ্ণ",
+    },
+    malayalam: {
+        supportive_empathetic: "സഹായകമായ",
+        appreciative_praising: "അഭിനന്ദനപരമായ",
+        informative_neutral: "നിഷ്പക്ഷമായ",
+        sarcastic_ironic: "പരിഹാസപരമായ",
+        critical_disapproving: "വിമർശനാത്മകമായ",
+        angry_hostile: "ശത്രുതാപരമായ",
+    }
+};
+
+// Mapping backend keys to display labels (defaulting to English for config referencing) and colors
+const SENTIMENT_COLORS: Record<string, string> = {
+    supportive_empathetic: "#84cc16", // lime-500
+    appreciative_praising: "#22c55e", // green-500
+    informative_neutral: "#94a3b8", // slate-400
+    sarcastic_ironic: "#a855f7", // purple-500
+    critical_disapproving: "#f59e0b", // amber-500
+    angry_hostile: "#ef4444", // red-500
+};
+
+// Mapping backend sentiment category strings to internal keys
+const CATEGORY_TO_KEY: Record<string, string> = {
+    "Supportive/Empathetic": "supportive_empathetic",
+    "Critical/Disapproving": "critical_disapproving",
+    "Sarcastic/Ironic": "sarcastic_ironic",
+    "Informative/Neutral": "informative_neutral",
+    "Appreciative/Praising": "appreciative_praising",
+    "Angry/Hostile": "angry_hostile"
 };
 
 type ViewState = "input" | "list" | "detail";
@@ -27,6 +80,7 @@ export default function Dashboard() {
 
     // State
     const [inputUrl, setInputUrl] = useState("");
+    const [selectedLanguage, setSelectedLanguage] = useState("english");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [view, setView] = useState<ViewState>("input");
@@ -61,7 +115,7 @@ export default function Dashboard() {
                 const res = await fetch("/api/v1/analyze", {
                     method: "POST",
                     headers,
-                    body: JSON.stringify({ url: urls[0], platform: "auto" })
+                    body: JSON.stringify({ url: urls[0], platform: "auto", language: selectedLanguage })
                 });
 
                 if (!res.ok) {
@@ -77,7 +131,7 @@ export default function Dashboard() {
                 const res = await fetch("/api/v1/analyze/batch", {
                     method: "POST",
                     headers,
-                    body: JSON.stringify({ urls })
+                    body: JSON.stringify({ urls, language: selectedLanguage })
                 });
 
                 if (!res.ok) {
@@ -151,10 +205,10 @@ export default function Dashboard() {
 
     // Helper to get chart data for a result
     const getChartData = (res: any) => {
-        return res?.summary ? Object.keys(SENTIMENT_CONFIG).map(key => ({
-            name: SENTIMENT_CONFIG[key].label,
+        return res?.summary ? Object.keys(SENTIMENT_COLORS).map(key => ({
+            name: SENTIMENT_TRANSLATIONS[selectedLanguage]?.[key] || SENTIMENT_TRANSLATIONS["english"][key],
             value: res.summary[key] || 0,
-            color: SENTIMENT_CONFIG[key].color
+            color: SENTIMENT_COLORS[key]
         })).filter(item => item.value > 0) : [];
     };
 
@@ -200,9 +254,22 @@ export default function Dashboard() {
                                     value={inputUrl}
                                     onChange={(e) => setInputUrl(e.target.value)}
                                 />
-                                <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-100">
-                                    <div className="text-sm text-gray-400 font-medium">
-                                        {new Set(inputUrl.split(/[\n,]+/).filter(u => u.trim().length > 0)).size} Unique URL(s) detected
+                                <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-100 flex-wrap gap-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-sm text-gray-400 font-medium whitespace-nowrap">
+                                            {new Set(inputUrl.split(/[\n,]+/).filter(u => u.trim().length > 0)).size} URL(s)
+                                        </div>
+                                        <select
+                                            value={selectedLanguage}
+                                            onChange={(e) => setSelectedLanguage(e.target.value)}
+                                            className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none"
+                                        >
+                                            {LANGUAGES.map((lang) => (
+                                                <option key={lang.value} value={lang.value}>
+                                                    {lang.label}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <Button
                                         type="submit"
@@ -424,18 +491,16 @@ export default function Dashboard() {
                             <h3 className="text-2xl font-bold mb-6">Key Insights by Category</h3>
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {Object.entries(currentResult.topComments || {}).map(([category, comments]: [string, any]) => {
-                                    const configKey = Object.keys(SENTIMENT_CONFIG).find(k => SENTIMENT_CONFIG[k].label === category.split('/')[0])
-                                        || Object.keys(SENTIMENT_CONFIG).find(k => category.toLowerCase().includes(k.split('_')[0]))
-                                        || "informative_neutral";
-
-                                    const style = SENTIMENT_CONFIG[configKey] || SENTIMENT_CONFIG.informative_neutral;
+                                    const key = CATEGORY_TO_KEY[category] || "informative_neutral";
+                                    const color = SENTIMENT_COLORS[key];
+                                    const label = SENTIMENT_TRANSLATIONS[selectedLanguage]?.[key] || SENTIMENT_TRANSLATIONS["english"][key];
 
                                     return (
                                         <Card key={category} className="glass border-black/5 shadow-sm hover:shadow-md transition-shadow">
-                                            <div className={`h-1 w-full`} style={{ backgroundColor: style.color }} />
+                                            <div className={`h-1 w-full`} style={{ backgroundColor: color }} />
                                             <CardHeader>
                                                 <CardTitle className="text-lg flex items-center justify-between">
-                                                    {category}
+                                                    {label}
                                                     <span className="text-xs px-2 py-1 rounded bg-gray-50 text-gray-500 font-normal">Top Comments</span>
                                                 </CardTitle>
                                             </CardHeader>

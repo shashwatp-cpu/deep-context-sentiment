@@ -32,6 +32,9 @@ const nextConfig: NextConfig = {
     }
   },
   allowedDevOrigins: ['*.orchids.page'],
+  experimental: {
+    proxyTimeout: 300000, // 5 minutes
+  },
   async rewrites() {
     return [
       {
@@ -41,6 +44,7 @@ const nextConfig: NextConfig = {
             ? 'http://127.0.0.1:8000/api/:path*'
             : '/api/:path*',
       },
+
     ];
   },
 } as NextConfig;

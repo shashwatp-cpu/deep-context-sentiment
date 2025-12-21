@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     APIFY_API_TOKEN: str
     GOOGLE_GEMINI_API_KEY: str
     OPENAI_API_KEY: Optional[str] = None
+    
+    # Clerk Configuration
+    CLERK_SECRET_KEY: Optional[str] = None
+    CLERK_API_URL: str = "https://api.clerk.com/v1"
 
     # Razorpay
     RAZORPAY_KEY_ID: Optional[str] = None

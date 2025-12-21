@@ -21,11 +21,20 @@ class SentimentCategory(str, Enum):
 
 
 
+class Language(str, Enum):
+    ENGLISH = "english"
+    HINDI = "hindi"
+    ASSAMESE = "assamese"
+    MALAYALAM = "malayalam"
+
+
 class AnalysisRequest(BaseModel):
     url: HttpUrl
+    language: Language = Language.ENGLISH
 
 class BatchAnalysisRequest(BaseModel):
     urls: List[HttpUrl]
+    language: Language = Language.ENGLISH
 
 
 class CleanedComment(BaseModel):

@@ -14,7 +14,10 @@ from app.models.schemas import (
     AnalysisResponse,
     Platform,
     SentimentSummary,
-    SentimentCategory
+    Platform,
+    SentimentSummary,
+    SentimentCategory,
+    Language
 )
 from app.utils.comment_cleaner import CommentCleaner
 from app.utils.ai_agent_logger import AIAgentLogger
@@ -54,7 +57,7 @@ class SentimentService:
         self.gemini_model = genai.GenerativeModel(settings.GEMINI_MODEL)
         self.ai_logger = AIAgentLogger()
 
-    def _build_batch_prompt(self, post_context: PostContext, comment_batch: List[CleanedComment]) -> str:
+    def _build_batch_prompt(self, post_context: PostContext, comment_batch: List[CleanedComment], language: Language = Language.ENGLISH) -> str:
         """Build prompt with post context and comments."""
         context_section = ""
         
@@ -88,6 +91,7 @@ class SentimentService:
         return (
             f"{context_section}\n\n"
             f"Comments to analyze:\n{comments_str}\n\n"
+            f"The comments are likely in {language.value}. Analyze them respecting the cultural context, but strictly classify them into the provided English Sentiment categories.\n"
             "Analyze each comment and return a JSON array of results."
         )
 
@@ -125,14 +129,15 @@ class SentimentService:
         post_context: PostContext,
         comment_batch: List[CleanedComment],
         batch_number: int,
-        url: str = None  # Added URL parameter for logging
+        url: str = None,  # Added URL parameter for logging
+        language: Language = Language.ENGLISH
     ) -> BatchResult:
         """Analyze a batch of comments using Gemini."""
         start_time = time.time()
         
         try:
             # Build and send prompt
-            prompt = self._build_batch_prompt(post_context, comment_batch)
+            prompt = self._build_batch_prompt(post_context, comment_batch, language)
             full_prompt = f"{self.SYSTEM_PROMPT}\n\n{prompt}"
             
             response = self.gemini_model.generate_content(full_prompt)
