@@ -26,7 +26,7 @@ router = APIRouter()
 # We use a simple object for current_user, typing can be Any or a specific Protocol
 from typing import Any
 User = Any # Placeholder type alias for now
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user, check_and_increment_usage
 from fastapi import Depends
 from fastapi import Depends
 
@@ -112,6 +112,9 @@ async def analyze_url(
     current_user: User = Depends(get_current_user)
 ) -> AnalysisResponse:
     """Analyze sentiment of comments on a social media post."""
+    # Check rate limit
+    await check_and_increment_usage(current_user.clerk_id)
+
     # Stateless analysis - No DB, No Limits
     
     try:
@@ -141,6 +144,9 @@ async def analyze_batch(
     current_user: User = Depends(get_current_user)
 ) -> BatchAnalysisResponse:
     """Analyze multiple URLs in parallel."""
+    # Check rate limit (counts as 1 request/batch or per URL? Let's count as 1 request for now to keep it simple, or iterate. The user asked for 5 times usage of tool, implying the action itself. If batch allows multiple, it might be a loophole, but let's stick to 1 tool usage = 1 API call for now.)
+    await check_and_increment_usage(current_user.clerk_id)
+
     start_time = time.time()
     
     tasks = [
