@@ -1,7 +1,10 @@
 import time
 import structlog
+import httpx
+import io
+from PIL import Image
 import google.generativeai as genai
-from typing import List, Dict
+from typing import List, Dict, Optional
 from collections import defaultdict
 from datetime import datetime
 
@@ -57,6 +60,19 @@ class SentimentService:
         self.gemini_model = genai.GenerativeModel(settings.GEMINI_MODEL)
         self.ai_logger = AIAgentLogger()
 
+    async def _download_image(self, url: str) -> Optional[Image.Image]:
+        """Download image from URL and convert to PIL Image."""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, timeout=10.0)
+                if response.status_code == 200:
+                    image_data = response.content
+                    image = Image.open(io.BytesIO(image_data))
+                    return image
+        except Exception as e:
+            logger.warning("image_download_failed", url=url, error=str(e))
+        return None
+
     def _build_batch_prompt(self, post_context: PostContext, comment_batch: List[CleanedComment], language: Language = Language.ENGLISH) -> str:
         """Build prompt with post context and comments."""
         context_section = ""
@@ -80,10 +96,11 @@ class SentimentService:
                 f"Image URL: {post_context.media}"
             )
         elif post_context.platform == Platform.INSTAGRAM:
+            # Note: The visual image is passed separately as a multimodal input if available.
             context_section = (
-                f"Images: {post_context.images}\n"
                 f"Alt: {post_context.alt}\n"
-                f"Captions: {post_context.caption}"
+                f"Captions: {post_context.caption}\n"
+                f"Transcripts: {post_context.captions}"
             )
         
         comments_str = CommentCleaner.aggregate_comments(comment_batch)
@@ -140,7 +157,19 @@ class SentimentService:
             prompt = self._build_batch_prompt(post_context, comment_batch, language)
             full_prompt = f"{self.SYSTEM_PROMPT}\n\n{prompt}"
             
-            response = self.gemini_model.generate_content(full_prompt)
+            # Prepare content parts
+            content_parts = [full_prompt]
+            
+            # Check for image content for multimodal analysis (specifically for Instagram)
+            if post_context.platform == Platform.INSTAGRAM and post_context.images:
+                # Use the first image
+                image_url = post_context.images[0]
+                image = await self._download_image(image_url)
+                if image:
+                    content_parts.append(image)
+                    logger.info("attached_image_for_analysis", url=image_url)
+            
+            response = self.gemini_model.generate_content(content_parts)
             
             # Parse response
             sentiments = self._parse_json_response(response.text)

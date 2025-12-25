@@ -54,6 +54,7 @@ function Navbar() {
           <a href="#solution" className="text-sm text-gray-600 hover:text-black transition-colors font-medium">Solution</a>
           <a href="#use-cases" className="text-sm text-gray-600 hover:text-black transition-colors font-medium">Use Cases</a>
           <a href="#features" className="text-sm text-gray-600 hover:text-black transition-colors font-medium">Features</a>
+          <Link href="/contact" className="text-sm text-gray-600 hover:text-black transition-colors font-medium">Contact</Link>
         </div>
 
         {/* Auth Aware Button */}
@@ -752,7 +753,7 @@ function Footer() {
           <div className="flex gap-8 text-gray-600 text-sm font-medium">
             <a href="#" className="hover:text-black transition-colors">Privacy</a>
             <a href="#" className="hover:text-black transition-colors">Terms</a>
-            <a href="#" className="hover:text-black transition-colors">Contact</a>
+            <Link href="/contact" className="hover:text-black transition-colors">Contact</Link>
           </div>
           <p className="text-gray-500 text-sm">© 2025 EliminateContext. All rights reserved.</p>
         </div>

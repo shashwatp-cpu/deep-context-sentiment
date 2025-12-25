@@ -147,18 +147,34 @@ class ScraperService:
         return post_context, cleaned_comments
 
     async def scrape_instagram(self, url: str) -> Tuple[PostContext, List[CleanedComment]]:
-        """Scrape Instagram post info and comments."""
-        # Get post info using the main scraper which supports direct URLs
+        """Scrape Instagram Reel/Post info and comments."""
+        # Get post info using the reel scraper
+        # Using 'apify/instagram-reel-scraper' as requested
         post_data = await self._make_apify_request(
-            "apify~instagram-scraper",
+            "apify~instagram-reel-scraper",
             {
-                "directUrls": [url],
-                "resultsType": "posts",
-                "resultsLimit": 1
+                "username": [url],
+                "includeTranscript": True,
+                "resultsLimit": 1,
+                "includeDownloadedVideo": False,
+                "includeSharesCount": False,
+                "skipPinnedPosts": False
             }
         )
 
         # Get comments
+        # We'll continue using the general instagram-scraper for comments as it's reliable for that
+        # or check if we should switch. The user said "replace the instagram scraper with this"
+        # but likely meant for the main content to get transcripts.
+        # "apify/instagram-reel-scraper" focuses on reels data.
+        # Let's keep the comment scraping separately using the generic scraper unless we know the reel scraper captures them well.
+        # Actually, let's try to get comments from the same scraper if possible, but usually they are separate or nested.
+        # For safety and minimal breakage, I will keep the comment fetching as is (using apify~instagram-scraper in comments mode)
+        # UNLESS the user explicitly meant replace EVERYTHING. 
+        # "replace the instagram scraper with this" implied the tool used for scraping the content.
+        # I will keep the comment scraper as is for now to ensure we still get comments, 
+        # as reel scrapers often just get the video data.
+        
         comment_data = await self._make_apify_request(
             "apify~instagram-scraper",
             {
@@ -171,22 +187,28 @@ class ScraperService:
         # Create post context
         post_info = post_data[0] if post_data else {}
         
-        # Extract images safely
+        # Extract images from displayUrl
         images = []
         if post_info.get("displayUrl"):
             images.append(post_info.get("displayUrl"))
-        elif post_info.get("thumbnailUrl"):
-            images.append(post_info.get("thumbnailUrl"))
         
-        # Also check for carousel images
-        if not images and post_info.get("images"):
-             images = post_info.get("images")
+        # Extract transcript if available
+        # User specified "transcript" key in the JSON
+        transcripts = post_info.get("transcript", "")
+        
+        # Also check for "captions" just in case, or combine
+        if not transcripts and post_info.get("captions"):
+             if isinstance(post_info["captions"], list):
+                transcripts = " ".join(str(c) for c in post_info["captions"])
+             else:
+                transcripts = str(post_info["captions"])
 
         post_context = PostContext(
             platform=Platform.INSTAGRAM,
             images=images,
-            alt=post_info.get("alt"),
-            caption=post_info.get("caption")
+            alt=post_info.get("alt"), # Keep for backward compat if fields exist
+            caption=post_info.get("caption"), # Main post text
+            captions=transcripts # Video transcript
         )
 
         # Process comments
