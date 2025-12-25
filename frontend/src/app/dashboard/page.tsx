@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { Brain, Search, Loader2, ArrowLeft, BarChart2, ExternalLink, Download } from "lucide-react";
+import { Brain, Search, Loader2, ArrowLeft, BarChart2, ExternalLink, Download, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -228,6 +228,10 @@ export default function Dashboard() {
                         <span className="text-xl font-bold tracking-tight text-black">EliminateContext</span>
                     </Link>
                     <div className="flex items-center gap-4">
+                        <Link href="/contact" className="text-sm font-medium text-gray-500 hover:text-black transition-colors flex items-center gap-2">
+                            <Mail className="w-4 h-4" />
+                            <span className="hidden md:inline">Contact</span>
+                        </Link>
                         <span className="text-sm font-medium text-gray-500 hidden md:block">Dashboard</span>
                         <UserButton afterSignOutUrl="/" />
                     </div>
