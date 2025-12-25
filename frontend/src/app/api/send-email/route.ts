@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
         const data = await resend.emails.send({
             from: "onboarding@resend.dev", // Using default testing domain
-            to: ["shashwat.p@nexgrowdigital.com"], //connect@eliminatecontext.com
+            to: ["connect@eliminatecontext.com"], //connect@eliminatecontext.com
             subject: `New Contact Form Submission from ${name}`,
             text: `
         Name: ${name}
