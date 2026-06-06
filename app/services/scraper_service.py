@@ -1,6 +1,7 @@
 import platform
 import httpx
 import structlog
+import re
 from typing import List, Tuple, Dict
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -15,6 +16,23 @@ class ScraperService:
         self.base_url = "https://api.apify.com/v2/acts"
         self.token = settings.APIFY_API_TOKEN
         self.timeout = settings.REQUEST_TIMEOUT
+
+    @staticmethod
+    def _format_count(count) -> Optional[str]:
+        """Format large numbers into K/M/B strings."""
+        if count is None:
+            return None
+        try:
+            num = int(count)
+            if num >= 1_000_000_000:
+                return f"{num / 1_000_000_000:.1f}B".replace(".0B", "B")
+            if num >= 1_000_000:
+                return f"{num / 1_000_000:.1f}M".replace(".0M", "M")
+            if num >= 1_000:
+                return f"{num / 1_000:.1f}K".replace(".0K", "K")
+            return str(num)
+        except (ValueError, TypeError):
+            return str(count)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=4, max=10))
     async def _make_apify_request(self, actor_id: str, payload: dict) -> List[dict]:
@@ -52,13 +70,29 @@ class ScraperService:
             }
         )
 
+        # Try to extract view count directly from page source
+        view_count = None
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                res = await client.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+                match = re.search(r'"viewCount":"(\d+)"', res.text)
+                if match:
+                    view_count = match.group(1)
+                else:
+                    match2 = re.search(r'<meta itemprop="interactionCount" content="(\d+)">', res.text)
+                    if match2:
+                        view_count = match2.group(1)
+        except Exception as e:
+            logger.warning("youtube_view_count_extraction_failed", error=str(e))
+            
         # Create post context
         video_info = transcript_data[0] if transcript_data else {}
         post_context = PostContext(
             platform=Platform.YOUTUBE,
             title=video_info.get("title"),
             description=video_info.get("description"),
-            captions=video_info.get("transcript", "")
+            captions=video_info.get("transcript", ""),
+            totalViews=self._format_count(view_count)
         )
 
         # Process comments
@@ -95,7 +129,8 @@ class ScraperService:
         post_context = PostContext(
             platform=Platform.FACEBOOK,
             text=post_info.get("text"),
-            media=post_info.get("media", [])
+            media=post_info.get("media", []),
+            totalViews=self._format_count(post_info.get("playCount") or post_info.get("likesCount"))
         )
 
         # Process comments
@@ -136,7 +171,8 @@ class ScraperService:
         post_context = PostContext(
             platform=Platform.TWITTER,
             text=main_tweet_details.get("fullText") or main_tweet_details.get("text"),
-            media=main_tweet_details.get("media", [])
+            media=main_tweet_details.get("media", []),
+            totalViews=self._format_count(main_tweet_details.get("viewCount") or post.get("viewCount"))
         )
 
         # Process ONLY the comments
@@ -208,7 +244,8 @@ class ScraperService:
             images=images,
             alt=post_info.get("alt"), # Keep for backward compat if fields exist
             caption=post_info.get("caption"), # Main post text
-            captions=transcripts # Video transcript
+            captions=transcripts, # Video transcript
+            totalViews=self._format_count(post_info.get("videoPlayCount") or post_info.get("playCount") or post_info.get("videoViewCount"))
         )
 
         # Process comments

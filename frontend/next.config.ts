@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
   },
   allowedDevOrigins: ['*.orchids.page'],
   experimental: {
-    proxyTimeout: 300000, // 5 minutes
+    proxyTimeout: 1200000, // 20 minutes
   },
   async rewrites() {
     return [

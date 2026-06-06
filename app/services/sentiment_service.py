@@ -1,12 +1,12 @@
 import time
 import structlog
 import httpx
-import io
-from PIL import Image
-import google.generativeai as genai
 from typing import List, Dict, Optional
 from collections import defaultdict
 from datetime import datetime
+
+from google import genai
+from google.genai import types
 
 from app.config import settings
 from app.models.schemas import (
@@ -56,19 +56,21 @@ class SentimentService:
     """
 
     def __init__(self):
-        genai.configure(api_key=settings.GOOGLE_GEMINI_API_KEY)
-        self.gemini_model = genai.GenerativeModel(settings.GEMINI_MODEL)
+        self.client = genai.Client(
+            vertexai=True,
+            project=settings.GCP_PROJECT_ID,
+            location=settings.GCP_LOCATION
+        )
         self.ai_logger = AIAgentLogger()
 
-    async def _download_image(self, url: str) -> Optional[Image.Image]:
-        """Download image from URL and convert to PIL Image."""
+    async def _download_image(self, url: str) -> Optional[types.Part]:
+        """Download image from URL and convert to a genai Part."""
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url, timeout=10.0)
+            async with httpx.AsyncClient() as http_client:
+                response = await http_client.get(url, timeout=10.0)
                 if response.status_code == 200:
-                    image_data = response.content
-                    image = Image.open(io.BytesIO(image_data))
-                    return image
+                    content_type = response.headers.get("content-type", "image/jpeg")
+                    return types.Part.from_bytes(data=response.content, mime_type=content_type)
         except Exception as e:
             logger.warning("image_download_failed", url=url, error=str(e))
         return None
@@ -169,7 +171,10 @@ class SentimentService:
                     content_parts.append(image)
                     logger.info("attached_image_for_analysis", url=image_url)
             
-            response = self.gemini_model.generate_content(content_parts)
+            response = self.client.models.generate_content(
+                model=settings.GEMINI_MODEL,
+                contents=content_parts
+            )
             
             # Parse response
             sentiments = self._parse_json_response(response.text)
@@ -232,7 +237,8 @@ class SentimentService:
             angry_hostile=len(grouped[SentimentCategory.ANGRY_HOSTILE]),
             sarcastic_ironic=len(grouped[SentimentCategory.SARCASTIC_IRONIC]),
             informative_neutral=len(grouped[SentimentCategory.INFORMATIVE_NEUTRAL]),
-            appreciative_praising=len(grouped[SentimentCategory.APPRECIATIVE_PRAISING])
+            appreciative_praising=len(grouped[SentimentCategory.APPRECIATIVE_PRAISING]),
+            totalViews=post_context.totalViews
         )
         
         # Create top and all comments dicts

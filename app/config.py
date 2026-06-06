@@ -13,8 +13,11 @@ class Settings(BaseSettings):
     
     # API Keys
     APIFY_API_TOKEN: str
-    GOOGLE_GEMINI_API_KEY: str
     OPENAI_API_KEY: Optional[str] = None
+    
+    # Google Cloud / Vertex AI
+    GCP_PROJECT_ID: str
+    GCP_LOCATION: str = "us-central1"
     
     # Clerk Configuration
     CLERK_SECRET_KEY: Optional[str] = None
@@ -33,7 +36,7 @@ class Settings(BaseSettings):
     # Removed for stateless Vercel deployment
     
     # Model Configuration
-    GEMINI_MODEL: str = "gemini-2.5-flash-lite"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
     OPENAI_MODEL: Optional[str] = "gpt-4"
     
     # Processing Settings

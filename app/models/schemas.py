@@ -58,6 +58,7 @@ class SentimentSummary(BaseModel):
     sarcastic_ironic: int
     informative_neutral: int
     appreciative_praising: int
+    totalViews: Optional[str] = None
 
 
 class PostContext(BaseModel):
@@ -70,6 +71,7 @@ class PostContext(BaseModel):
     images: Optional[List[str]] = None
     alt: Optional[str] = None
     caption: Optional[str] = None
+    totalViews: Optional[str] = None
 
 
 class BatchResult(BaseModel):
