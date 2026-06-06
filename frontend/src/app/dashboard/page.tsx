@@ -99,8 +99,8 @@ export default function Dashboard() {
         setCurrentResult(null);
 
         // Split URLs by newline or comma and filter empty
-        // Split URLs by newline or comma and filter empty, then deduplicate
-        const rawUrls = inputUrl.split(/[\n,]+/).map(u => u.trim()).filter(u => u.length > 0);
+        // Split URLs by newline, comma, or Unicode line/paragraph separators and filter empty, then deduplicate
+        const rawUrls = inputUrl.split(/[\n\r,\u2028\u2029]+/).map(u => u.trim()).filter(u => u.length > 0);
         const urls = Array.from(new Set(rawUrls));
 
         try {
@@ -259,7 +259,7 @@ export default function Dashboard() {
                                 <div className="bg-[#f3f4f6]/80 px-6 py-4 flex items-center justify-between flex-wrap gap-4">
                                     <div className="flex items-center gap-4">
                                         <div className="text-[13px] text-black font-semibold whitespace-nowrap">
-                                            {new Set(inputUrl.split(/[\n,]+/).filter(u => u.trim().length > 0)).size} URL(s)
+                                            {new Set(inputUrl.split(/[\n\r,\u2028\u2029]+/).filter(u => u.trim().length > 0)).size} URL(s)
                                         </div>
                                         <select
                                             value={selectedLanguage}
