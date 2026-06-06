@@ -81,6 +81,7 @@ class BatchResult(BaseModel):
 
 class AnalysisResponse(BaseModel):
     status: str = "completed"
+    error: Optional[str] = None
     timestamp: datetime
     postUrl: str
     platform: Platform
