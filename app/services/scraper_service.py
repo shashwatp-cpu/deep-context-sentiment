@@ -2,7 +2,7 @@ import platform
 import httpx
 import structlog
 import re
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import settings
