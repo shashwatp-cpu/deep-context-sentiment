@@ -25,6 +25,10 @@ export const metadata: Metadata = {
     description: "Stop counting keywords. Start understanding intent. The first Generative AI sentiment engine that detects sarcasm, predicts crises, and understands deep context.",
     type: "website",
   },
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
   manifest: "/manifest.json"
 };
 

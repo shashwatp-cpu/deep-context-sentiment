@@ -222,6 +222,7 @@ export default function Dashboard() {
             <nav className="border-b border-black/5 bg-white/50 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                        <img src="/logo.png" alt="EliminateContext" className="w-8 h-8 rounded-lg" />
                         <span className="text-xl font-bold tracking-tight text-black">EliminateContext</span>
                     </Link>
                     <div className="flex items-center gap-4">
@@ -326,20 +327,31 @@ export default function Dashboard() {
                                         <CardContent>
                                             <div className="flex items-center justify-between">
                                                 <div className="text-sm text-gray-500">
-                                                    <span className="block font-bold text-2xl text-black">{res.summary?.totalComments}</span>
-                                                    Comments
+                                                    {res.summary?.totalComments > 0 ? (
+                                                        <>
+                                                            <span className="block font-bold text-2xl text-black">{res.summary?.totalComments}</span>
+                                                            Comments
+                                                        </>
+                                                    ) : (
+                                                        <div className="text-red-500">
+                                                            <span className="block font-bold text-lg">Analysis Failed</span>
+                                                            <span className="text-xs">API Limit Reached</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 {/* Mini Pie Chart Preview */}
                                                 <div className="w-16 h-16">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <PieChart>
-                                                            <Pie data={getChartData(res)} cx="50%" cy="50%" innerRadius={0} outerRadius={30} dataKey="value">
-                                                                {getChartData(res).map((entry, index) => (
-                                                                    <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                                                                ))}
-                                                            </Pie>
-                                                        </PieChart>
-                                                    </ResponsiveContainer>
+                                                    {res.summary?.totalComments > 0 && (
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <PieChart>
+                                                                <Pie data={getChartData(res)} cx="50%" cy="50%" innerRadius={0} outerRadius={30} dataKey="value">
+                                                                    {getChartData(res).map((entry, index) => (
+                                                                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                                                                    ))}
+                                                                </Pie>
+                                                            </PieChart>
+                                                        </ResponsiveContainer>
+                                                    )}
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -392,21 +404,21 @@ export default function Dashboard() {
                                 <CardContent className="p-5 flex flex-col justify-center h-full">
                                     <span className="text-[10px] font-bold text-gray-400 mb-1">Sentiment Score</span>
                                     <div className="flex items-end gap-2 mt-1">
-                                        <span className="text-[32px] font-bold tracking-tight text-black leading-none">{currentResult.summary?.sentimentScore || "88/100"}</span>
+                                        <span className="text-[32px] font-bold tracking-tight text-black leading-none">{currentResult.summary?.totalComments > 0 ? (currentResult.summary?.sentimentScore || "88/100") : "N/A"}</span>
                                     </div>
-                                    <span className="text-[9px] font-medium text-gray-400 mt-2">High Positivity</span>
+                                    <span className="text-[9px] font-medium text-gray-400 mt-2">{currentResult.summary?.totalComments > 0 ? "High Positivity" : "Not Analyzed"}</span>
                                 </CardContent>
                             </Card>
                             <Card className="shadow-sm border-gray-100 rounded-lg">
                                 <CardContent className="p-5 flex flex-col justify-center">
                                     <span className="text-[10px] font-bold text-gray-400 mb-1">Total Views</span>
-                                    <span className="text-[32px] font-bold tracking-tight text-black leading-none mt-1">{currentResult.summary?.totalViews || "170K"}</span>
+                                    <span className="text-[32px] font-bold tracking-tight text-black leading-none mt-1">{currentResult.summary?.totalViews || "N/A"}</span>
                                 </CardContent>
                             </Card>
                             <Card className="shadow-sm border-gray-100 rounded-lg">
                                 <CardContent className="p-5 flex flex-col justify-center">
                                     <span className="text-[10px] font-bold text-gray-400 mb-1">Total Comments</span>
-                                    <span className="text-[32px] font-bold tracking-tight text-black leading-none mt-1">{currentResult.summary?.totalComments || "70"}</span>
+                                    <span className="text-[32px] font-bold tracking-tight text-black leading-none mt-1">{currentResult.summary?.totalComments > 0 ? currentResult.summary?.totalComments : "Failed"}</span>
                                 </CardContent>
                             </Card>
                         </div>
