@@ -1,3 +1,4 @@
+import os
 import time
 import structlog
 import httpx
@@ -56,6 +57,13 @@ class SentimentService:
     """
 
     def __init__(self):
+        gcp_sa_json = os.environ.get("GCP_SERVICE_ACCOUNT_JSON")
+        if gcp_sa_json:
+            tmp_key_path = "/tmp/gcp_key.json"
+            with open(tmp_key_path, "w", encoding="utf-8") as f:
+                f.write(gcp_sa_json)
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = tmp_key_path
+
         self.client = genai.Client(
             vertexai=True,
             project=settings.GCP_PROJECT_ID,
